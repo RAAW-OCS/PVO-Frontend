@@ -1,11 +1,10 @@
-// Homepage: member login bar, "next event" bar, and the community calendar.
+// Homepage: member login bar, "next event" card, recent photos, and the community calendar.
 import { escapeHtml, formatLongDate, formatTimeRange, loadEvents } from './api.js';
-import { logIn, setStatus, startGuest, whileBusy } from './auth.js';
-import { initCalendar, initEventDialog, openEventDialog } from './calendar.js';
+import { enableWhenReady, logIn, setStatus, startGuest, whileBusy } from './auth.js';
+import { initCalendar, openEvent } from './calendar.js';
 import { renderRecaps } from './gallery.js';
+import { initModal } from './modal.js';
 import { refreshSession } from './site.js';
-
-const monthShort = new Intl.DateTimeFormat(undefined, { month: 'short' });
 
 function initMemberBar() {
   const form = document.querySelector('[data-quick-login]');
@@ -17,8 +16,7 @@ function initMemberBar() {
     form.reset();
     setStatus(status, '');
     await refreshSession(); // the bar switches to "Welcome back, <name>"
-    document.querySelector('.pvo-memberbar__welcome h2')?.setAttribute('tabindex', '-1');
-    document.querySelector('.pvo-memberbar__welcome h2')?.focus();
+    document.querySelector('[data-welcome-title]')?.focus();
     return name;
   };
 
@@ -45,54 +43,44 @@ function initMemberBar() {
     }
     await signedIn(result.name);
   });
+  enableWhenReady(form.querySelector('[type="submit"]'), guestButton);
 }
 
 function renderNextEvent(slot, events, ok) {
   if (!slot) return;
   if (!ok) {
-    slot.innerHTML = '<span class="pvo-next__empty">The calendar could not be loaded right now. Please check back soon.</span>';
+    slot.innerHTML = '<p class="m-0">The calendar could not be loaded right now. Please check back soon.</p>';
     return;
   }
   const now = new Date();
   const next = events.find((event) => (event.end || event.start) >= now);
   if (!next) {
-    slot.innerHTML = '<span class="pvo-next__empty">Nothing is scheduled yet. New workdays, fundraisers, and get-togethers are posted here first.</span>';
+    slot.innerHTML = '<p class="m-0">Nothing is scheduled yet. New workdays, fundraisers, and get-togethers are posted here first.</p>';
     return;
   }
   slot.innerHTML = `
-    <button class="pvo-next__event" type="button" data-next-id="${next.id}">
-      <span class="pvo-next__date" aria-hidden="true">
-        <span>${escapeHtml(monthShort.format(next.start))}</span>
-        <strong>${next.start.getDate()}</strong>
-      </span>
-      <span class="pvo-next__text">
-        <span class="pvo-next__title">${escapeHtml(next.title)}</span>
-        <span class="pvo-next__meta">${escapeHtml(formatLongDate(next.start))} · ${escapeHtml(formatTimeRange(next.start, next.end))}</span>
-        ${next.location ? `<span class="pvo-next__meta">${escapeHtml(next.location)}</span>` : ''}
-      </span>
+    <button type="button" class="w-full text-left" data-next-id="${next.id}">
+      <span class="block text-lg font-bold" data-next-title>${escapeHtml(next.title)}</span>
+      <span class="block text-sm text-neutral-400">${escapeHtml(formatLongDate(next.start))} &middot; ${escapeHtml(formatTimeRange(next.start, next.end))}</span>
+      ${next.location ? `<span class="block text-sm text-neutral-400">${escapeHtml(next.location)}</span>` : ''}
     </button>`;
-  slot.querySelector('[data-next-id]').addEventListener('click', () => {
-    const dialog = document.querySelector('[data-event-dialog]');
-    if (dialog) openEventDialog(dialog, next);
-  });
+  slot.querySelector('[data-next-id]').addEventListener('click', () => openEvent(next));
 }
 
 async function init() {
   initMemberBar();
-  initEventDialog();
-  const calendar = document.querySelector('[data-pvo-calendar]');
+  initModal();
   const { ok, events } = await loadEvents();
   renderNextEvent(document.querySelector('[data-next-event]'), events, ok);
   const recaps = document.querySelector('[data-home-recaps]');
-  if (recaps && ok && renderRecaps(recaps.querySelector('[data-recaps]'), events, { limit: 4 }) > 0) {
+  if (recaps && ok && renderRecaps(recaps.querySelector('[data-recaps]'), events, { limit: 3 }) > 0) {
     recaps.hidden = false;
   }
+  const calendar = document.querySelector('[data-pvo-calendar]');
   if (calendar) {
-    initCalendar(calendar, events);
+    initCalendar(calendar, events, { ok });
     if (!ok) {
-      const status = calendar.querySelector('[data-agenda-status]');
-      status.hidden = false;
-      status.textContent = 'The calendar is temporarily unavailable. Please try again later.';
+      setStatus(document.querySelector('[data-calendar-status]'), 'The calendar is temporarily unavailable. Please try again later.', 'info');
     }
   }
 }

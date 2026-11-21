@@ -1,43 +1,38 @@
 ---
 layout: pvo
-title: Administration
+title: Admin Tools
 permalink: /admin/
 search_exclude: true
 show_reading_time: false
+active_tab: admin
 pvo_script: /assets/js/pvo/admin.js
 ---
+{%- comment -%} OCS card panels, OCS .form-group fields, OCS buttons as tabs, OCS status boxes; Tailwind arrangement. {%- endcomment -%}
+<p class="max-w-3xl mb-6">Post events to the public calendar. Administrators can also give members their roles.</p>
 
-<div class="pvo-page-head">
-  <div class="pvo-wrap">
-    <span class="pvo-kicker">Administration</span>
-    <h1 class="pvo-page-head__title">Admin Tools</h1>
-    <p>Post events to the public calendar. Administrators can also give members their roles.</p>
+<p data-admin-loading>Checking your account…</p>
+
+<div class="p-4 rounded-lg bg-neutral-800 border border-neutral-700 max-w-3xl" data-admin-gate hidden>
+  <h2 class="text-xl font-bold m-0" data-gate-title>Administrators and event organizers only</h2>
+  <p data-gate-text>Log in with an administrator or event organizer account to post events.</p>
+  <div class="flex flex-wrap gap-2" data-gate-actions>
+    <a class="medium filledTinted primary inline-flex items-center" href="{{ '/member-login/' | relative_url }}?next={{ '/admin/' | relative_url | url_encode }}">Member Login</a>
+    <a class="medium primary inline-flex items-center" href="{{ '/' | relative_url }}">Back to the homepage</a>
   </div>
 </div>
 
-<div class="pvo-wrap pvo-account">
-  <p class="pvo-loading" data-admin-loading>Checking your account…</p>
-
-  <div class="pvo-card pvo-gate" data-admin-gate hidden>
-    <h2 class="pvo-card__title" data-gate-title>Administrators and event organizers only</h2>
-    <p data-gate-text>Log in with an administrator or event organizer account to post events.</p>
-    <div class="pvo-actions" data-gate-actions>
-      <a class="medium filledHighlight primary" href="{{ '/member-login/' | relative_url }}?next={{ '/admin/' | relative_url | url_encode }}">Member Login</a>
-      <a class="medium primary" href="{{ '/' | relative_url }}">Back to the homepage</a>
-    </div>
+<div data-admin hidden>
+  <div class="flex flex-wrap gap-2 mb-6" role="tablist" aria-label="Admin sections" data-admin-tabs>
+    <button class="medium primary" type="button" role="tab" id="tab-events" aria-controls="panel-events" aria-selected="true" data-admin-tab>Events</button>
+    <button class="medium secondary" type="button" role="tab" id="tab-people" aria-controls="panel-people" aria-selected="false" tabindex="-1" data-admin-tab>People &amp; Roles</button>
   </div>
 
-  <div class="pvo-admin" data-admin hidden>
-    <div class="pvo-tabs" role="tablist" aria-label="Admin sections" data-admin-tabs>
-      <button class="medium primary pvo-tab" type="button" role="tab" id="tab-events" aria-controls="panel-events" aria-selected="true" data-admin-tab>Events</button>
-      <button class="medium primary pvo-tab" type="button" role="tab" id="tab-people" aria-controls="panel-people" aria-selected="false" tabindex="-1" data-admin-tab>People &amp; Roles</button>
-    </div>
-
-    <div class="pvo-admin__events" role="tabpanel" id="panel-events" aria-labelledby="tab-events">
-      <section class="pvo-card pvo-admin__editor" aria-labelledby="event-form-title">
-        <div class="pvo-card__head">
-          <h2 class="pvo-card__title" id="event-form-title" data-event-form-title>Post an event</h2>
-          <button class="small secondary" type="button" data-cancel-edit hidden>Cancel editing</button>
+  <div role="tabpanel" id="panel-events" aria-labelledby="tab-events">
+    <div class="grid gap-6 2xl:grid-cols-2 items-start">
+      <section class="p-4 sm:p-6 rounded-lg bg-neutral-800 border border-neutral-700" aria-labelledby="event-form-title">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+          <h2 class="text-xl font-bold m-0" id="event-form-title" data-event-form-title>Post an event</h2>
+          <span data-cancel-edit-wrap hidden><button class="small secondary" type="button" data-cancel-edit>Cancel editing</button></span>
         </div>
         <form id="event-form" novalidate>
           <div class="form-group">
@@ -45,7 +40,7 @@ pvo_script: /assets/js/pvo/admin.js
             <input id="event-title" name="title" type="text" maxlength="160" required>
           </div>
 
-          <div class="pvo-form-row">
+          <div class="grid gap-x-4 sm:grid-cols-3">
             <div class="form-group">
               <label for="event-date">Date</label>
               <input id="event-date" name="date" type="date" required>
@@ -67,74 +62,74 @@ pvo_script: /assets/js/pvo/admin.js
 
           <div class="form-group">
             <label for="event-description">Description</label>
-            <textarea class="smallInput" id="event-description" name="description" maxlength="2000" required></textarea>
+            <textarea class="smallInput w-full" id="event-description" name="description" maxlength="2000" required></textarea>
           </div>
 
-          <fieldset class="pvo-fieldset">
-            <legend>Picture or video (optional)</legend>
-            <div class="pvo-picture">
-              <div class="pvo-picture__preview" data-picture-preview>
-                <span class="pvo-picture__empty">No picture yet</span>
+          <fieldset class="border border-neutral-700 rounded-lg p-4 mb-4">
+            <legend class="px-2 font-bold">Picture or video (optional)</legend>
+            <div class="grid gap-4 sm:grid-cols-[12rem_1fr]">
+              <div class="relative w-full aspect-video rounded-lg bg-neutral-900 border border-neutral-700 overflow-hidden flex items-center justify-center" data-picture-preview>
+                <span class="text-sm text-neutral-400">No picture yet</span>
               </div>
-              <div class="pvo-picture__inputs">
-                <label class="medium primary pvo-picture__upload" for="event-picture">Choose a photo…</label>
-                <input class="pvo-visually-hidden pvo-picture__file" id="event-picture" name="picture" type="file" accept="image/jpeg,image/png,image/gif,image/webp">
-                <span class="pvo-hint">JPEG, PNG, GIF, or WebP. Large photos are resized before uploading. Events whose date has passed show their picture or video on the Photos &amp; Videos page.</span>
-                <div class="form-group">
+              <div>
+                <label class="medium primary inline-flex items-center cursor-pointer" for="event-picture">Choose a photo…</label>
+                <input class="sr-only" id="event-picture" name="picture" type="file" accept="image/jpeg,image/png,image/gif,image/webp">
+                <small class="block mt-2">JPEG, PNG, GIF, or WebP. Large photos are resized before uploading. Events whose date has passed show their picture or video on the Photos &amp; Videos page.</small>
+                <div class="form-group mt-3">
                   <label for="event-image-url">Or paste a link to an image or video (YouTube or .mp4)</label>
                   <input id="event-image-url" name="image_url" type="url" placeholder="https://">
                 </div>
-                <button class="small secondary" type="button" data-remove-picture hidden>Remove picture</button>
+                <span data-remove-picture-wrap hidden><button class="small secondary" type="button" data-remove-picture>Remove picture</button></span>
               </div>
             </div>
           </fieldset>
 
-          <div class="pvo-form-footer">
-            <button class="large filledHighlight primary" type="submit" data-event-submit>Publish event</button>
-            <div class="pvo-status" id="event-status" role="status" aria-live="polite"></div>
+          <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+            <button class="large primary" type="submit" data-event-submit>Publish event</button>
+            <div class="flex-1" role="status" aria-live="polite" id="event-status"></div>
           </div>
         </form>
       </section>
 
-      <section class="pvo-card pvo-admin__list" aria-labelledby="event-list-title">
-        <div class="pvo-card__head">
-          <h2 class="pvo-card__title" id="event-list-title">On the calendar</h2>
-          <span class="pvo-hint" data-event-count></span>
+      <section class="p-4 sm:p-6 rounded-lg bg-neutral-800 border border-neutral-700" aria-labelledby="event-list-title">
+        <div class="flex flex-wrap items-baseline justify-between gap-2 mb-2">
+          <h2 class="text-xl font-bold m-0" id="event-list-title">On the calendar</h2>
+          <small data-event-count></small>
         </div>
         <p data-event-empty hidden>No events yet. Anything you publish shows up on the homepage calendar right away.</p>
-        <ol class="pvo-admin__events-list" data-event-list></ol>
+        <ol class="p-0 m-0 list-none divide-y divide-neutral-700" data-event-list></ol>
       </section>
     </div>
+  </div>
 
-    <div role="tabpanel" id="panel-people" aria-labelledby="tab-people" hidden>
-      <section class="pvo-card" aria-labelledby="people-title">
-        <div class="pvo-card__head">
-          <h2 class="pvo-card__title" id="people-title">People &amp; Roles</h2>
-          <label class="switch">
-            <span class="toggle">
-              <input type="checkbox" data-show-guests>
-              <span class="slider"></span>
-            </span>
-            <span class="label-text">Show guest sessions</span>
-          </label>
-        </div>
-        <ul class="pvo-role-guide" aria-label="What each role can do">
-          <li><span class="pvo-badge pvo-badge--admin">Administrator</span> Posts and edits events, and gives people their roles.</li>
-          <li><span class="pvo-badge pvo-badge--organizer">Event organizer</span> Posts and edits events, but cannot change roles.</li>
-          <li><span class="pvo-badge">Veteran</span> <span class="pvo-badge">Family member</span> <span class="pvo-badge">Volunteer</span> <span class="pvo-badge">Member</span> Member accounts with a profile. People choose one when they sign up or in their profile survey, and you can correct it here.</li>
-          <li><span class="pvo-badge pvo-badge--guest">Guest</span> Temporary sessions, cleared after a week. They cannot be given a role.</li>
-        </ul>
-        <p class="pvo-hint">You cannot change your own role. Ask another administrator.</p>
-        <div class="pvo-status" id="people-status" role="status" aria-live="polite"></div>
-        <div class="pvo-table-wrap">
-          <table class="pvo-table">
-            <thead>
-              <tr><th scope="col">Name</th><th scope="col">Username</th><th scope="col">Email</th><th scope="col">Role</th></tr>
-            </thead>
-            <tbody data-people></tbody>
-          </table>
-        </div>
-      </section>
-    </div>
+  <div role="tabpanel" id="panel-people" aria-labelledby="tab-people" hidden>
+    <section class="p-4 sm:p-6 rounded-lg bg-neutral-800 border border-neutral-700" aria-labelledby="people-title">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <h2 class="text-xl font-bold m-0" id="people-title">People &amp; Roles</h2>
+        <label class="switch">
+          <span class="toggle">
+            <input type="checkbox" data-show-guests>
+            <span class="slider"></span>
+          </span>
+          <span class="label-text">Show guest sessions</span>
+        </label>
+      </div>
+      <ul class="p-0 my-4 list-none space-y-2" aria-label="What each role can do" data-role-guide>
+        <li class="m-0"><strong>Administrator:</strong> posts and edits events, and gives people their roles.</li>
+        <li class="m-0"><strong>Event organizer:</strong> posts and edits events, but cannot change roles.</li>
+        <li class="m-0"><strong>Veteran, Family member, Volunteer, Member:</strong> member accounts with a profile. People choose one when they sign up or in their profile survey, and you can correct it here.</li>
+        <li class="m-0"><strong>Guest:</strong> temporary sessions, cleared after a week. They cannot be given a role.</li>
+      </ul>
+      <small class="block">You cannot change your own role. Ask another administrator.</small>
+      <div role="status" aria-live="polite" id="people-status"></div>
+      <div class="mt-4 overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead>
+            <tr class="border-b border-neutral-700 text-neutral-100"><th scope="col" class="py-2 pr-4 text-neutral-100">Name</th><th scope="col" class="py-2 pr-4 text-neutral-100">Username</th><th scope="col" class="py-2 pr-4 text-neutral-100">Email</th><th scope="col" class="py-2 text-neutral-100">Role</th></tr>
+          </thead>
+          <tbody class="divide-y divide-neutral-700" data-people></tbody>
+        </table>
+      </div>
+    </section>
   </div>
 </div>

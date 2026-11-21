@@ -1,7 +1,8 @@
-<head>
-    <title>Site Title</title>
-
-    <style>
+{%- comment -%}
+  OCS top bar. Default: OCS logo and site pages. A layout can pass logo, title and links
+  (an include for the right-hand side) to brand it, e.g. _layouts/pvo.html.
+{%- endcomment -%}
+<style>
         .site-header {
             backdrop-filter: blur(30px);
             border-top: 0px solid;
@@ -472,11 +473,30 @@
             }
         }
     </style>
-</head>
 
-<body>
+{%- if include.links %}
+<header class="site-header">
+    <div class="flex items-center justify-between gap-2 h-[55px] px-3 md:px-6 leading-normal">
+        <div class="flex items-center gap-2 min-w-0">
+            {%- if include.menu != 0 %}
+            <button type="button" class="min-[769px]:hidden small secondary inline-flex items-center gap-1" data-sidebar-toggle aria-controls="aesthetihawk-sidebar" aria-expanded="false">
+                {%- include aesthetihawk/icon.html name="menu" class="w-4 h-4" -%}<span>Menu</span>
+            </button>
+            {%- endif %}
+            <a class="site-title flex items-center gap-2 min-w-0" href="{{ '/' | relative_url }}">
+                <img src="{{ include.logo | relative_url }}" alt="" class="h-9 w-auto">
+                <span class="sr-only sm:not-sr-only truncate text-base lg:text-xl">{{ include.title | default: site.title }}</span>
+            </a>
+        </div>
+        <div class="flex items-center gap-2">
+            {%- include {{ include.links }} -%}
+        </div>
+    </div>
+</header>
+{%- else %}
     <header class="site-header">
         <div class="wrapper">
+            {% if include.menu != 0 %}<button type="button" class="min-[769px]:hidden small secondary float-left mt-[13px] mr-2" data-sidebar-toggle aria-controls="aesthetihawk-sidebar" aria-expanded="false">Menu</button>{% endif %}
             {%- assign default_paths = site.pages | map: "path" -%}
             {%- assign page_paths = site.minima.nav_pages | default: default_paths -%}
             {%- assign titles_size = site.pages | map: 'title' | join: '' | size -%}
@@ -516,4 +536,4 @@
     </header>
 
     <script type="module" src="{{ site.baseurl }}/assets/js/api/login.js"></script>
-</body>
+{%- endif %}

@@ -1,0 +1,11 @@
+{%- comment -%}
+  Pop-up for event details and photos/videos: the OCS modal (calendar.scss: .modal, .modal-content, .close).
+  Opened and closed by assets/js/pvo/modal.js. The Tailwind z-index puts it above the OCS top bar
+  (.site-header uses z-index 999999999, the OCS modal 9999).
+{%- endcomment -%}
+<div class="modal z-[1000000000]" role="dialog" aria-modal="true" aria-labelledby="pvo-modal-title" data-modal>
+  <div class="modal-content">
+    <button type="button" class="close" aria-label="Close" data-modal-close>&times;</button>
+    <div class="px-4 sm:px-0" data-modal-body></div>
+  </div>
+</div>

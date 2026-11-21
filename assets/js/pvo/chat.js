@@ -1,5 +1,6 @@
-// Floating PVO assistant. Only active on pages whose front matter sets `chatbot: true`.
-import { apiFetch, escapeHtml } from './api.js';
+// Floating PVO assistant in the OCS chat window (.msger, .msg, .msg-bubble, .msg-text from
+// chatbot.scss). Only active on pages whose front matter sets `chatbot: true`.
+import { apiFetch, baseurl, escapeHtml } from './api.js';
 
 const FALLBACK = 'Sorry, I could not answer that right now. You can email '
   + '<a href="mailto:contact@powayveterans.org">contact@powayveterans.org</a> or call '
@@ -15,7 +16,7 @@ function formatReply(text) {
   const out = [];
   let list = [];
   const flush = () => {
-    if (list.length) out.push(`<ul>${list.map((item) => `<li>${item}</li>`).join('')}</ul>`);
+    if (list.length) out.push(`<ul class="list-disc pl-5 my-1">${list.map((item) => `<li>${item}</li>`).join('')}</ul>`);
     list = [];
   };
   lines.forEach((line) => {
@@ -24,7 +25,7 @@ function formatReply(text) {
       list.push(bullet[1]);
     } else {
       flush();
-      if (line.trim()) out.push(`<p>${line}</p>`);
+      if (line.trim()) out.push(`<p class="my-1">${line}</p>`);
     }
   });
   flush();
@@ -34,7 +35,8 @@ function formatReply(text) {
 export function initChat() {
   const panel = document.querySelector('[data-chat]');
   const launch = document.querySelector('[data-chat-launch]');
-  if (!panel || !launch) return;
+  const inline = panel?.hasAttribute('data-chat-inline'); // the /pvo-chatbot/ page: always open
+  if (!panel || (!launch && !inline)) return;
 
   const log = panel.querySelector('[data-chat-log]');
   const form = panel.querySelector('[data-chat-form]');
@@ -45,39 +47,47 @@ export function initChat() {
   let greeted = false;
 
   function addMessage(role, html, chips = []) {
+    const mine = role === 'user';
     const message = document.createElement('div');
-    message.className = `pvo-chat__msg pvo-chat__msg--${role}`;
-    const bubble = document.createElement('div');
-    bubble.className = 'pvo-chat__bubble';
-    bubble.innerHTML = html;
-    message.append(bubble);
+    message.className = `msg ${mine ? 'right-msg' : 'left-msg'} mb-3`;
+    message.dataset.role = role;
+    message.innerHTML = `
+      <div class="msg-bubble ${mine ? 'bg-neutral-600' : 'bg-neutral-800'} text-neutral-100 border border-neutral-700">
+        <div class="msg-info"><div class="msg-info-name text-xs text-neutral-300">${mine ? 'You' : 'PVO Assistant'}</div></div>
+        <div class="msg-text text-neutral-100">${html}</div>
+      </div>`;
     if (chips.length) {
       const row = document.createElement('div');
-      row.className = 'pvo-chat__chips';
+      row.className = 'flex flex-wrap gap-2 mt-2';
       chips.forEach((label) => {
         const chip = document.createElement('button');
         chip.type = 'button';
-        chip.className = 'small filledTinted primary'; // OCS button
+        chip.className = 'small secondary'; // OCS button (passes contrast on <button>)
         chip.textContent = label;
         chip.addEventListener('click', () => ask(label));
         row.append(chip);
       });
-      message.append(row);
+      message.querySelector('.msg-bubble').append(row);
     }
     log.append(message);
     log.scrollTop = log.scrollHeight;
     return message;
   }
 
+  function greet() {
+    if (greeted) return;
+    greeted = true;
+    addMessage('bot', '<p class="my-1">Hi, and thank you for stopping by. I can help with assistance requests, volunteering, donations, events, and how to reach PVO.</p>'
+      + `<p class="my-1">Need help with a repair? <a href="${baseurl}/prescreener">Start a request</a>.</p>`, STARTERS);
+  }
+
   function setOpen(open) {
-    panel.hidden = !open;
+    panel.classList.toggle('hidden', !open);
+    panel.classList.toggle('flex', open);
     launch.setAttribute('aria-expanded', String(open));
-    launch.hidden = open;
+    launch.classList.toggle('hidden', open);
     if (open) {
-      if (!greeted) {
-        greeted = true;
-        addMessage('bot', '<p>Hi, and thank you for stopping by. I can help with assistance requests, volunteering, donations, events, and how to reach PVO.</p>', STARTERS);
-      }
+      greet();
       input.focus();
     } else {
       launch.focus();
@@ -90,9 +100,9 @@ export function initChat() {
     busy = true;
     send.disabled = true;
     input.value = '';
-    addMessage('user', `<span>${escapeHtml(question)}</span>`);
+    addMessage('user', escapeHtml(question));
     history.push({ role: 'user', content: question });
-    const typing = addMessage('bot', '<span class="pvo-chat__typing" aria-label="Assistant is typing"><span></span><span></span><span></span></span>');
+    const typing = addMessage('bot', '<span class="text-neutral-300">Typing…</span>');
 
     const result = await apiFetch('/api/chat', { method: 'POST', body: { messages: history }, timeout: 45000 });
     typing.remove();
@@ -102,21 +112,26 @@ export function initChat() {
       addMessage('bot', formatReply(reply));
     } else {
       history.pop();
-      addMessage('bot', `<p>${FALLBACK}</p>`);
+      addMessage('bot', `<p class="my-1">${FALLBACK}</p>`);
     }
     busy = false;
     send.disabled = false;
     input.focus();
   }
 
-  launch.addEventListener('click', () => setOpen(true));
-  panel.querySelector('[data-chat-close]').addEventListener('click', () => setOpen(false));
   form.addEventListener('submit', (event) => {
     event.preventDefault();
     ask(input.value);
   });
+  if (inline) {
+    greet();
+    panel.dataset.ready = 'true';
+    return;
+  }
+  launch.addEventListener('click', () => setOpen(true));
+  panel.querySelector('[data-chat-close]').addEventListener('click', () => setOpen(false));
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && !panel.hidden) setOpen(false);
+    if (event.key === 'Escape' && !panel.classList.contains('hidden')) setOpen(false);
   });
   // Links to the stand-alone assistant page open the panel instead when it is available
   document.querySelectorAll('a[href$="/pvo-chatbot/"], [data-chat-open]').forEach((link) => {
@@ -125,4 +140,5 @@ export function initChat() {
       setOpen(true);
     });
   });
+  panel.dataset.ready = 'true'; // the launcher works from now on
 }

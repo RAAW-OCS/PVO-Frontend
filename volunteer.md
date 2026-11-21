@@ -1,697 +1,190 @@
 ---
+layout: pvo
+title: Volunteer with PVO
 permalink: /volunteer
-layout: page
-api_base: http://localhost:4500
+hide_title: true
+active_tab: volunteer
+chatbot: true
 ---
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Poway Veterans Organization — Volunteer & Donate</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700;900&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --navy: #1a2744;
-    --navy-dark: #111c33;
-    --navy-light: #243460;
-    --gold: #c9a84c;
-    --gold-light: #e8c97a;
-    --red: #b22234;
-    --red-dark: #8c1a28;
-    --cream: #08111f;
-    --warm-white: #101a2c;
-    --gray: #8f9cb1;
-    --gray-light: #33425c;
-    --text: #f4f7fb;
-    --text-light: #c0cad8;
-    --font-display: 'Merriweather', Georgia, serif;
-    --font-body: 'Source Sans 3', 'Georgia', sans-serif;
-  }
-
-  html { scroll-behavior: smooth; }
-  .site-header{display:none!important}
-  .page-content{padding:0!important;overflow-x:hidden}
-  .page-content>.wrapper,.opencs_root,.post,.post-content,.post-content.e-content{max-width:none!important;width:100%!important;margin:0!important;padding:0!important}
-  .post-header,.post-title{display:none!important}
-
-  body {
-    font-family: var(--font-body);
-    background: #08111f;
-    color: var(--text);
-    line-height: 1.6;
-    font-size: 16px;
-  }
-  .pvo-site{width:100vw;margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);background:#08111f;overflow:hidden}
-
-  /* ── HEADER / NAV ── */
-  header{background:var(--navy-dark);border-bottom:3px solid var(--gold);position:sticky;top:0;z-index:100;box-shadow:0 2px 18px rgba(0,0,0,0.35)}
-  .header-inner{max-width:1200px;margin:0 auto;padding:0.9rem 2rem;display:flex;align-items:center;flex-wrap:wrap;justify-content:space-between;gap:1.2rem 2rem;min-height:72px}
-  .logo-wrap{display:flex;align-items:center;gap:0.9rem;text-decoration:none}
-  .logo-emblem{width:46px;height:46px;background:linear-gradient(145deg,var(--gold) 0%,var(--gold-light) 50%,var(--gold) 100%);border-radius:50%;border:2px solid rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:0.58rem;font-weight:900;letter-spacing:0.04em;color:var(--navy-dark);text-align:center;line-height:1.2;flex-shrink:0}
-  .logo-text-main{font-family:var(--font-display);font-size:0.95rem;font-weight:700;color:#fff;line-height:1.2;white-space:nowrap}
-  nav{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:0.45rem;margin-left:auto}
-  nav a{color:rgba(255,255,255,0.82);text-decoration:none;font-size:0.83rem;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;padding:0.45rem 0.75rem;border:1px solid transparent;border-radius:999px;transition:color 0.18s,background 0.18s}
-  nav a:hover{color:#fff;background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.1)}
-  .nav-cta{background:var(--red)!important;color:#fff!important;border-color:rgba(255,255,255,0.15)!important;border-radius:999px;padding:0.45rem 1rem!important;transition:background 0.18s!important}
-  .nav-cta:hover{background:var(--red-dark)!important}
-
-  /* ── PAGE SECTIONS ── */
-  .page { display: none; }
-  .page.active { display: block; }
-
-  /* ── HERO BANNER ── */
-  .hero {
-    background: transparent;
-    padding: 5rem 2rem 4rem;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-  .hero-eyebrow {
-    font-family: var(--font-body);
-    font-size: 0.75rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 1rem;
-    font-weight: 600;
-  }
-  .hero h1 {
-    font-family: var(--font-display);
-    font-size: clamp(2.2rem, 5vw, 3.5rem);
-    color: #fff;
-    line-height: 1.15;
-    margin-bottom: 1.25rem;
-    position: relative;
-  }
-  .hero h1 em {
-    color: var(--gold);
-    font-style: normal;
-  }
-  .hero-sub {
-    font-size: 1.1rem;
-    color: rgba(255,255,255,0.72);
-    max-width: 560px;
-    margin: 0 auto 2.5rem;
-    font-weight: 300;
-    line-height: 1.75;
-  }
-  .hero-cta {
-    display: inline-flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  .btn {
-    display: inline-block;
-    padding: 0.75rem 2rem;
-    border-radius: 4px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    cursor: pointer;
-    border: 2px solid transparent;
-    transition: all 0.2s;
-    text-decoration: none;
-  }
-  .btn-gold {
-    background: var(--gold);
-    color: var(--navy);
-    border-color: var(--gold);
-  }
-  .btn-gold:hover { background: var(--gold-light); border-color: var(--gold-light); }
-  .btn-outline {
-    background: transparent;
-    color: #fff;
-    border-color: rgba(255,255,255,0.4);
-  }
-  .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
-  .btn-navy {
-    background: var(--navy);
-    color: #fff;
-    border-color: var(--navy);
-  }
-  .btn-navy:hover { background: var(--navy-light); }
-
-  /* ── SECTION SHELL ── */
-  section { padding: 4rem 2rem; }
-  .container { max-width: 1040px; margin: 0 auto; }
-  .section-label {
-    font-size: 0.7rem;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: var(--gold);
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-  }
-  .section-title {
-    font-family: var(--font-display);
-    font-size: clamp(1.6rem, 3vw, 2.2rem);
-    color: var(--navy);
-    line-height: 1.2;
-    margin-bottom: 1rem;
-  }
-  .section-body {
-    font-size: 1rem;
-    color: rgba(255,255,255,0.7);
-    max-width: 640px;
-    line-height: 1.75;
-    margin-bottom: 2.5rem;
-  }
-
-  /* ── STAT BAR ── */
-  .stat-bar {
-    background: transparent;
-    padding: 2.5rem 2rem;
-    border-top: 1px solid rgba(200,146,42,0.15);
-    border-bottom: 1px solid rgba(200,146,42,0.15);
-  }
-  .stat-grid {
-    max-width: 1040px;
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 2rem;
-    text-align: center;
-  }
-  .stat-item { position: relative; }
-  .stat-item + .stat-item::before {
-    content: '';
-    position: absolute;
-    left: 0; top: 50%;
-    transform: translateY(-50%);
-    height: 40px;
-    width: 1px;
-    background: rgba(200,146,42,0.3);
-  }
-  .stat-num {
-    font-family: var(--font-display);
-    font-size: 2.4rem;
-    color: var(--gold);
-    line-height: 1;
-    margin-bottom: 0.35rem;
-  }
-  .stat-label {
-    font-size: 0.78rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.6);
-  }
-
-  /* ── ROLE CARDS ── */
-  .roles-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-    gap: 1.5rem;
-  }
-  .role-card {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(200,146,42,0.2);
-    border-radius: 8px;
-    padding: 1.75rem;
-    cursor: pointer;
-    transition: all 0.25s;
-    position: relative;
-    overflow: hidden;
-  }
-  .role-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0;
-    width: 4px; height: 100%;
-    background: var(--gold);
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
-  .role-card:hover, .role-card.selected {
-    border-color: var(--gold);
-    box-shadow: 0 4px 20px rgba(200,146,42,0.15);
-    transform: translateY(-2px);
-  }
-  .role-card:hover::before, .role-card.selected::before { opacity: 1; }
-  .role-icon {
-    font-size: 1.75rem;
-    margin-bottom: 0.75rem;
-    display: block;
-  }
-  .role-title {
-    font-family: var(--font-display);
-    font-size: 1.1rem;
-    color: #fff;
-    margin-bottom: 0.35rem;
-  }
-  .role-desc {
-    font-size: 0.88rem;
-    color: #ffffff !important;
-    line-height: 1.6;
-    margin-bottom: 1rem;
-  }
-  .role-card .role-body {
-    overflow: hidden;
-    max-height: 0;
-    transition: max-height 0.35s ease, opacity 0.3s ease;
-    opacity: 0;
-  }
-  .role-card.open .role-body {
-    max-height: 200px;
-    opacity: 1;
-  }
-  .role-toggle {
-    float: right;
-    font-size: 0.75rem;
-    color: var(--gold);
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    transition: transform 0.3s;
-    display: inline-block;
-  }
-  .role-card.open .role-toggle {
-    transform: rotate(180deg);
-  }
-  .role-meta {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-  }
-  .tag {
-    font-size: 0.72rem;
-    padding: 0.2rem 0.6rem;
-    border-radius: 20px;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-  }
-  .tag-time { background: #eff6ff; color: #1d4ed8; }
-  .tag-level { background: #f0fdf4; color: #166534; }
-  .tag-group { background: #fef3c7; color: #92400e; }
-
-  /* ── CORPORATE BAND ── */
-  .corporate-band {
-    background: transparent;
-    border-top: 1px solid rgba(200,146,42,0.2);
-    border-bottom: 1px solid rgba(200,146,42,0.2);
-    padding: 3rem 2rem;
-  }
-  .corporate-inner {
-    max-width: 1040px;
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 3rem;
-    align-items: center;
-  }
-  @media (max-width: 640px) { .corporate-inner { grid-template-columns: 1fr; } }
-  .corporate-text h3 {
-    font-family: var(--font-display);
-    font-size: 1.5rem;
-    color: #fff;
-    margin-bottom: 0.75rem;
-  }
-  .corporate-text p { color: #fff !important; line-height: 1.75; font-size: 0.95rem; }
-  .corporate-perks { list-style: none; margin-top: 1rem; }
-  .corporate-perks li {
-    font-size: 0.88rem;
-    color: #fff !important;
-    padding: 0.3rem 0;
-    padding-left: 1.2rem;
-    position: relative;
-  }
-  .corporate-perks li::before {
-    content: '✓';
-    position: absolute; left: 0;
-    color: var(--gold);
-    font-weight: 700;
-  }
-
-  /* ── SIGN-UP FORM ── */
-  .form-section {
-    background: transparent;
-    padding: 4rem 2rem;
-  }
-  .form-shell {
-    max-width: 680px;
-    margin: 0 auto;
-    background: transparent;
-    border-radius: 10px;
-    padding: 2.5rem;
-    border: 1px solid rgba(200,146,42,0.25);
-    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-  }
-  .form-shell .section-title { margin-bottom: 0.5rem; color: #fff !important; }
-  .form-shell .section-body { margin-bottom: 2rem; font-size: 0.9rem; color: #fff !important; }
-  .form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    margin-bottom: 1rem;
-  }
-  .form-row.full { grid-template-columns: 1fr; }
-  .form-group { display: flex; flex-direction: column; gap: 0.35rem; }
-  .form-group label {
-    font-size: 0.78rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.8);
-  }
-  .form-group input,
-  .form-group select,
-  .form-group textarea {
-    padding: 0.65rem 0.9rem;
-    border: 1.5px solid rgba(200,146,42,0.3);
-    border-radius: 5px;
-    font-family: var(--font-body);
-    font-size: 0.95rem;
-    color: #fff;
-    background: rgba(255,255,255,0.06);
-    transition: border-color 0.2s;
-    outline: none;
-  }
-  .form-group input:focus,
-  .form-group select:focus,
-  .form-group textarea:focus {
-    border-color: var(--gold);
-    box-shadow: 0 0 0 3px rgba(200,146,42,0.12);
-  }
-  .form-group textarea { resize: vertical; min-height: 90px; }
-  .role-selector {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.5rem;
-    margin-top: 0.5rem;
-  }
-  .role-check {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.82rem;
-    color: rgba(255,255,255,0.8);
-    cursor: pointer;
-    padding: 0.4rem 0.5rem;
-    border-radius: 4px;
-    border: 1px solid rgba(200,146,42,0.25);
-    transition: all 0.15s;
-  }
-  .role-check:hover { border-color: var(--gold); background: rgba(200,146,42,0.08); }
-  .role-check input { accent-color: var(--gold); }
-  .form-submit {
-    margin-top: 1.5rem;
-    width: 100%;
-    padding: 1rem;
-    background: var(--gold);
-    color: var(--navy);
-    border: none;
-    border-radius: 5px;
-    font-family: var(--font-body);
-    font-size: 0.9rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  .form-submit:hover { background: var(--gold-light); }
-  .form-note {
-    font-size: 0.78rem;
-    color: rgba(255,255,255,0.68);
-    text-align: center;
-    margin-top: 0.75rem;
-  }
-
-  /* ── STAT BAR MOBILE ── */
-  @media (max-width: 600px) {
-    .header-inner{padding:0.9rem 1rem 1rem;justify-content:center;text-align:center}
-    .logo-wrap{flex-direction:column;text-align:center}
-    nav{width:100%;margin-left:0;justify-content:center}
-    nav a{width:100%;text-align:center}
-    .form-row { grid-template-columns: 1fr; }
-    .role-selector { grid-template-columns: repeat(2, 1fr); }
-    .stat-item + .stat-item::before { display: none; }
-  }
-
-</style>
-</head>
-<body>
-
-<div class="pvo-site">
-<header>
-  <div class="header-inner">
-    <a class="logo-wrap" href="https://pvo.opencodingsociety.com/">
-      <div class="logo-emblem">PVO</div>
-      <div>
-        <div class="logo-text-main">Poway Veterans Organization</div>
-      </div>
-    </a>
-    <nav>
-      <a href="/#tools">Platform Tools</a>
-      <a href="/#about">About</a>
-      <a href="https://pvo.opencodingsociety.com/volunteer" target="_blank" rel="noopener">Volunteer</a>
-      <a href="https://pvo.opencodingsociety.com/prescreener" target="_blank" rel="noopener" class="nav-cta">Check Eligibility</a>
-    </nav>
+{%- comment -%}
+  Volunteer sign-up. Built from OCS pieces only: OCS card panels, buttons, .form-group fields, .switch
+  toggles and status boxes; Tailwind arrangement. Sends the form to POST /api/volunteers.
+{%- endcomment -%}
+<section aria-labelledby="volunteer-title">
+  <p class="text-xs font-bold uppercase tracking-wider text-neutral-400 m-0">Join the mission</p>
+  <h1 id="volunteer-title" class="!block text-3xl md:text-5xl font-bold leading-tight mt-2 mb-4">Give your time. Change a veteran's life.</h1>
+  <p class="text-lg max-w-3xl mb-6">PVO volunteers are the reason area veterans have roofs over their heads, wheels under them, and someone in their corner. Find your role below, then sign up in minutes.</p>
+  <div class="flex flex-wrap gap-3 mt-6">
+    <a href="#volunteer-roles" class="large filledTinted primary inline-flex items-center">Find my role</a>
+    <a href="#volunteer-form" class="large primary inline-flex items-center">Go to the sign-up form</a>
   </div>
-</header>
+</section>
 
-<div id="volunteer-page" class="page active">
+<dl class="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-3 m-0">
+  <div class="p-4 rounded-lg bg-neutral-800 border border-neutral-700"><dt class="text-2xl font-bold">340+</dt><dd class="m-0 text-sm text-neutral-400">Veterans served</dd></div>
+  <div class="p-4 rounded-lg bg-neutral-800 border border-neutral-700"><dt class="text-2xl font-bold">6</dt><dd class="m-0 text-sm text-neutral-400">Volunteer teams</dd></div>
+  <div class="p-4 rounded-lg bg-neutral-800 border border-neutral-700"><dt class="text-2xl font-bold">8,200+</dt><dd class="m-0 text-sm text-neutral-400">Volunteer hours logged</dd></div>
+  <div class="p-4 rounded-lg bg-neutral-800 border border-neutral-700"><dt class="text-2xl font-bold">100%</dt><dd class="m-0 text-sm text-neutral-400">Volunteer-driven</dd></div>
+</dl>
 
-  <div class="hero">
-    <div class="hero-eyebrow">Join the mission</div>
-    <h1>Give Your Time.<br><em>Change a Veteran's Life.</em></h1>
-    <p class="hero-sub">PVO volunteers are the reason area veterans have roofs over their heads, wheels under them, and someone in their corner. Find your role below — then sign up in minutes.</p>
-    <div class="hero-cta">
-      <a href="#volunteer-roles" class="btn btn-gold">Find My Role</a>
-      <a href="#volunteer-form" class="btn btn-outline">Go to Sign-Up Form</a>
+<section id="volunteer-roles" class="mt-12 scroll-mt-20" aria-labelledby="roles-title">
+  <p class="text-xs font-bold uppercase tracking-wider text-neutral-400 m-0">Where you fit in</p>
+  <h2 id="roles-title" class="text-2xl font-bold mt-1 mb-2">Six teams. One mission.</h2>
+  <p class="max-w-3xl mb-6">Every volunteer is matched to a team based on skills, availability, and interest. Open a team to read more, which also ticks it in the sign-up form below.</p>
+  {%- capture teams -%}
+  hammer|Home Repair|Home repair|Carpentry, drywall, painting, and general handyman work at veterans' homes. Our most active and impactful team.|4–8 hrs/project;Any skill level
+  flag|Events|Events &amp; fundraising|Support the annual golf tournament and other PVO events: setup, registration, logistics, and community outreach.|Seasonal / event-based;No experience needed
+  chat|Outreach|Community outreach|Connect with veteran service organizations, attend community events, and help spread awareness of PVO's programs.|2–4 hrs/month;Communication skills
+  clipboard|Admin|Admin &amp; coordination|Scheduling, record-keeping, donor acknowledgment letters, and volunteer coordination support from home or on-site.|Flexible hours;Organized, detail-oriented
+  car|Transport|Transport|Drive veterans to medical appointments, help haul materials to project sites, and assist with equipment pickup and delivery.|As-needed scheduling;Valid CA driver's license
+  gear|Skilled Trades|Skilled trades|Licensed plumbers, electricians, welders, and mechanics. Tackle complex repairs that need professional-level expertise.|Project-based;Licensed or certified;High demand
+  {%- endcapture -%}
+  <ul class="grid gap-4 md:grid-cols-2 xl:grid-cols-3 p-0 m-0 list-none">
+    {%- assign team_rows = teams | strip | newline_to_br | split: '<br />' %}
+    {%- for row in team_rows %}
+    {%- assign t = row | strip | split: '|' %}
+    {%- assign team_icon = t[0] %}
+    {%- assign tags = t[4] | split: ';' %}
+    <li class="m-0 group role-card p-4 rounded-lg bg-neutral-800 border border-neutral-700 [&.open]:border-indigo-500">
+      <button type="button" class="w-full flex items-center gap-3 text-left" aria-expanded="false" aria-controls="team-{{ forloop.index }}" onclick="toggleRole(this.closest('.role-card'), '{{ t[1] }}')">
+        {% include aesthetihawk/icon.html name=team_icon class="w-7 h-7" %}
+        <span class="flex-1 text-lg font-bold">{{ t[2] }}</span>
+        {% include aesthetihawk/icon.html name="chevron-down" class="w-5 h-5 transition-transform group-[.open]:rotate-180" %}
+      </button>
+      <div class="hidden group-[.open]:block mt-3" id="team-{{ forloop.index }}">
+        <p class="text-sm mt-0">{{ t[3] }}</p>
+        <div class="flex flex-wrap gap-2">
+          {%- for tag in tags %}
+          <span class="px-2 py-0.5 rounded-full text-xs bg-neutral-700">{{ tag }}</span>
+          {%- endfor %}
+        </div>
+      </div>
+    </li>
+    {%- endfor %}
+  </ul>
+</section>
+
+<section class="mt-12 grid gap-6 lg:grid-cols-[3fr_2fr]" aria-labelledby="groups-title">
+  <div>
+    <h2 id="groups-title" class="text-2xl font-bold mt-0 mb-2">Group and corporate volunteering</h2>
+    <p class="my-3">Bring your team. PVO welcomes corporate volunteer days, service club projects, and faith community groups. We'll coordinate a meaningful half-day or full-day experience for groups of any size.</p>
+    <ul class="list-disc pl-6">
+      <li>Dedicated project coordinator for your group</li>
+      <li>All materials and tools provided on-site</li>
+      <li>Certificate of service for company CSR reporting</li>
+      <li>Tax-deductible materials donations welcome</li>
+      <li>Opportunity for ongoing community partnership</li>
+    </ul>
+  </div>
+  <div class="p-6 rounded-lg bg-neutral-800 border border-neutral-700 self-start">
+    <h3 class="text-lg font-bold mt-0 mb-2">Schedule a group day</h3>
+    <p class="my-3">Contact us to plan your team's volunteer experience. We accommodate groups of 5 to 40+.</p>
+    <p class="m-0">Phone: <a href="{{ site.pvo_contact.phone_link }}">{{ site.pvo_contact.phone }}</a></p>
+    <p class="m-0">Email: <a href="mailto:{{ site.pvo_contact.email }}">{{ site.pvo_contact.email }}</a></p>
+  </div>
+</section>
+
+<section id="volunteer-form" class="mt-12 p-4 sm:p-6 rounded-lg bg-neutral-800 border border-neutral-700 max-w-4xl scroll-mt-20" aria-labelledby="signup-title">
+  <p class="text-xs font-bold uppercase tracking-wider text-neutral-400 m-0">Sign up</p>
+  <h2 id="signup-title" class="text-2xl font-bold mt-1 mb-2">Join the PVO volunteer team</h2>
+  <p class="my-3">Fill out the form and a team manager will reach out within 3 business days to match you with your first project.</p>
+
+  <div class="grid gap-x-4 md:grid-cols-2">
+    <div class="form-group">
+      <label for="first_name">First name *</label>
+      <input type="text" id="first_name" autocomplete="given-name" placeholder="First">
+    </div>
+    <div class="form-group">
+      <label for="last_name">Last name *</label>
+      <input type="text" id="last_name" autocomplete="family-name" placeholder="Last">
+    </div>
+    <div class="form-group">
+      <label for="phone">Phone *</label>
+      <input type="tel" id="phone" autocomplete="tel" placeholder="(858) 555-0000">
+    </div>
+    <div class="form-group">
+      <label for="email">Email *</label>
+      <input type="email" id="email" autocomplete="email" placeholder="you@email.com">
+    </div>
+    <div class="form-group md:col-span-2">
+      <label for="city_zip">City / ZIP *</label>
+      <input type="text" id="city_zip" autocomplete="postal-code" placeholder="Poway, CA 92064">
     </div>
   </div>
 
-  <div class="stat-bar">
-    <div class="stat-grid">
-      <div class="stat-item">
-        <div class="stat-num">340+</div>
-        <div class="stat-label">Veterans served</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-num">6</div>
-        <div class="stat-label">Volunteer teams</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-num">8,200+</div>
-        <div class="stat-label">Volunteer hours logged</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-num">100%</div>
-        <div class="stat-label">Volunteer-driven</div>
-      </div>
+  <fieldset class="border border-neutral-700 rounded-lg p-4 mb-4">
+    <legend class="px-2 font-bold">Volunteer teams (choose all that interest you)</legend>
+    <div class="grid gap-3 sm:grid-cols-2" id="role-selector">
+      {%- assign team_values = "Home Repair|Events|Outreach|Admin|Transport|Skilled Trades" | split: "|" %}
+      {%- for value in team_values %}
+      <label class="switch">
+        <span class="toggle">
+          <input type="checkbox" value="{{ value }}">
+          <span class="slider"></span>
+        </span>
+        <span class="label-text">{{ value }}</span>
+      </label>
+      {%- endfor %}
+    </div>
+  </fieldset>
+
+  <div class="form-group">
+    <label for="skills">Skills and experience</label>
+    <textarea class="smallInput w-full" id="skills" placeholder="Briefly describe relevant skills (e.g. carpentry, welding, project management, driving, administrative work)…"></textarea>
+  </div>
+  <div class="grid gap-x-4 md:grid-cols-2">
+    <div class="form-group">
+      <label for="availability">Availability</label>
+      <select id="availability">
+        <option value="">Any restrictions?</option>
+        <option>Weekdays only</option>
+        <option>Weekends only</option>
+        <option>Weekday mornings</option>
+        <option>Flexible — most days</option>
+        <option>Event-based only</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="best_time">Best time to reach you</label>
+      <select id="best_time">
+        <option value="">Select…</option>
+        <option>Morning (8am–12pm)</option>
+        <option>Afternoon (12pm–5pm)</option>
+        <option>Evening (5pm–8pm)</option>
+      </select>
     </div>
   </div>
-
-  <section id="volunteer-roles" style="background: transparent;">
-    <div class="container">
-      <div class="section-label">Where you fit in</div>
-      <div class="section-title" style="color: #fff;">Six Teams. One Mission.</div>
-      <p class="section-body">Every volunteer is matched to a team based on skills, availability, and interest. Click a card to expand — then include it in your sign-up below.</p>
-
-      <div class="roles-grid">
-
-        <div class="role-card" onclick="toggleRole(this, 'Home Repair')">
-          <span class="role-icon">🔨</span>
-          <div class="role-title">Home Repair <span class="role-toggle">▼</span></div>
-          <div class="role-body">
-            <p class="role-desc">Carpentry, drywall, painting, and general handyman work at veterans' homes. Our most active and impactful team.</p>
-            <div class="role-meta">
-              <span class="tag tag-time">4–8 hrs/project</span>
-              <span class="tag tag-level">Any skill level</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="role-card" onclick="toggleRole(this, 'Events')">
-          <span class="role-icon">🎗️</span>
-          <div class="role-title">Events & Fundraising <span class="role-toggle">▼</span></div>
-          <div class="role-body">
-            <p class="role-desc">Support the annual golf tournament and other PVO events — setup, registration, logistics, and community outreach.</p>
-            <div class="role-meta">
-              <span class="tag tag-time">Seasonal / event-based</span>
-              <span class="tag tag-level">No experience needed</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="role-card" onclick="toggleRole(this, 'Outreach')">
-          <span class="role-icon">📣</span>
-          <div class="role-title">Community Outreach <span class="role-toggle">▼</span></div>
-          <div class="role-body">
-            <p class="role-desc">Connect with veteran service organizations, attend community events, and help spread awareness of PVO's programs.</p>
-            <div class="role-meta">
-              <span class="tag tag-time">2–4 hrs/month</span>
-              <span class="tag tag-level">Communication skills</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="role-card" onclick="toggleRole(this, 'Admin')">
-          <span class="role-icon">📋</span>
-          <div class="role-title">Admin & Coordination <span class="role-toggle">▼</span></div>
-          <div class="role-body">
-            <p class="role-desc">Scheduling, record-keeping, donor acknowledgment letters, and volunteer coordination support from home or on-site.</p>
-            <div class="role-meta">
-              <span class="tag tag-time">Flexible hours</span>
-              <span class="tag tag-level">Organized, detail-oriented</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="role-card" onclick="toggleRole(this, 'Transport')">
-          <span class="role-icon">🚗</span>
-          <div class="role-title">Transport <span class="role-toggle">▼</span></div>
-          <div class="role-body">
-            <p class="role-desc">Drive veterans to medical appointments, help haul materials to project sites, and assist with equipment pickup and delivery.</p>
-            <div class="role-meta">
-              <span class="tag tag-time">As-needed scheduling</span>
-              <span class="tag tag-level">Valid CA driver's license</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="role-card" onclick="toggleRole(this, 'Skilled Trades')">
-          <span class="role-icon">⚙️</span>
-          <div class="role-title">Skilled Trades <span class="role-toggle">▼</span></div>
-          <div class="role-body">
-            <p class="role-desc">Licensed plumbers, electricians, welders, and mechanics. Tackle complex repairs that need professional-level expertise.</p>
-            <div class="role-meta">
-              <span class="tag tag-time">Project-based</span>
-              <span class="tag tag-level">Licensed or certified</span>
-              <span class="tag tag-group">High demand</span>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-  <div class="corporate-band">
-    <div class="corporate-inner">
-      <div class="corporate-text">
-        <h3>Group & Corporate Volunteering</h3>
-        <p>Bring your team. PVO welcomes corporate volunteer days, service club projects, and faith community groups. We'll coordinate a meaningful half-day or full-day experience for groups of any size.</p>
-        <ul class="corporate-perks">
-          <li>Dedicated project coordinator for your group</li>
-          <li>All materials and tools provided on-site</li>
-          <li>Certificate of service for company CSR reporting</li>
-          <li>Tax-deductible materials donations welcome</li>
-          <li>Opportunity for ongoing community partnership</li>
-        </ul>
-      </div>
-      <div>
-        <div style="background: var(--navy); border-radius: 8px; padding: 2rem; color: #fff;">
-          <div style="font-family: var(--font-display); font-size: 1.1rem; margin-bottom: 0.75rem; color: var(--gold);">Schedule a group day</div>
-          <p style="font-size: 0.88rem; color: rgba(255,255,255,0.7); margin-bottom: 1.25rem; line-height: 1.65;">Contact us to plan your team's volunteer experience. We accommodate groups of 5 to 40+.</p>
-          <p style="font-size: 0.85rem; color: rgba(255,255,255,0.6); margin-bottom: 0.4rem;">📞 858-206-8854</p>
-          <p style="font-size: 0.85rem; color: rgba(255,255,255,0.6);">✉ <a href="mailto:contact@powayveterans.org">contact@powayveterans.org</a></p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="form-section" id="volunteer-form">
-    <div class="form-shell">
-      <div class="section-label" style="color: var(--gold);">Sign up</div>
-      <div class="section-title">Join the PVO Volunteer Team</div>
-      <p class="section-body">Fill out the form and a team manager will reach out within 3 business days to match you with your first project.</p>
-
-      <div class="form-row">
   <div class="form-group">
-    <label>First Name *</label>
-    <input type="text" id="first_name" placeholder="First">
+    <label for="organization">Group or organization (optional)</label>
+    <input type="text" id="organization" autocomplete="organization" placeholder="Company, faith community, service club, etc.">
   </div>
-  <div class="form-group">
-    <label>Last Name *</label>
-    <input type="text" id="last_name" placeholder="Last">
-  </div>
-</div>
-<div class="form-row">
-  <div class="form-group">
-    <label>Phone *</label>
-    <input type="tel" id="phone" placeholder="(858) 555-0000">
-  </div>
-  <div class="form-group">
-    <label>Email *</label>
-    <input type="email" id="email" placeholder="you@email.com">
-  </div>
-</div>
-<div class="form-row full">
-  <div class="form-group">
-    <label>City / Zip *</label>
-    <input type="text" id="city_zip" placeholder="Poway, CA 92064">
-  </div>
-</div>
 
-<div class="form-group" style="margin-bottom: 1rem;">
-  <label>Volunteer Roles (select all that interest you)</label>
-  <div class="role-selector" id="role-selector">
-    <label class="role-check"><input type="checkbox" value="Home Repair"> Home Repair</label>
-    <label class="role-check"><input type="checkbox" value="Events"> Events</label>
-    <label class="role-check"><input type="checkbox" value="Outreach"> Outreach</label>
-    <label class="role-check"><input type="checkbox" value="Admin"> Admin</label>
-    <label class="role-check"><input type="checkbox" value="Transport"> Transport</label>
-    <label class="role-check"><input type="checkbox" value="Skilled Trades"> Skilled Trades</label>
+  <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+    <button type="button" class="large primary form-submit">Submit volunteer application</button>
+    <div class="flex-1" role="status" aria-live="polite" id="volunteer-status"></div>
   </div>
-</div>
-
-<div class="form-row full">
-  <div class="form-group">
-    <label>Skills & Experience</label>
-    <textarea id="skills" placeholder="Briefly describe relevant skills (e.g. carpentry, welding, project management, driving, administrative work)…"></textarea>
-  </div>
-</div>
-<div class="form-row">
-  <div class="form-group">
-    <label>Availability</label>
-    <select id="availability">
-      <option value="">Any restrictions?</option>
-      <option>Weekdays only</option>
-      <option>Weekends only</option>
-      <option>Weekday mornings</option>
-      <option>Flexible — most days</option>
-      <option>Event-based only</option>
-    </select>
-  </div>
-  <div class="form-group">
-    <label>Best time to reach you</label>
-    <select id="best_time">
-      <option value="">Select…</option>
-      <option>Morning (8am–12pm)</option>
-      <option>Afternoon (12pm–5pm)</option>
-      <option>Evening (5pm–8pm)</option>
-    </select>
-  </div>
-</div>
-<div class="form-row full">
-  <div class="form-group">
-    <label>Group or Organization (optional)</label>
-    <input type="text" id="organization" placeholder="Company, faith community, service club, etc.">
-  </div>
-</div>
-
-<button class="form-submit">Submit Volunteer Application</button>
-<p class="form-note">Your info is used only for volunteer coordination and is never shared or sold.</p>
-
-</div>
-</div>
-</div>
-</div>
+  <p class="text-sm mt-3 mb-0">Your info is used only for volunteer coordination and is never shared or sold.</p>
+</section>
 
 <script>
+  // Open a team card; opening it also ticks that team in the sign-up form.
   function toggleRole(card, role) {
     card.classList.toggle('open');
-    const checkboxes = document.querySelectorAll('#role-selector input[type="checkbox"]');
-    checkboxes.forEach(cb => {
-      if (cb.value === role) cb.checked = card.classList.contains('open');
+    const open = card.classList.contains('open');
+    card.querySelector('[aria-expanded]').setAttribute('aria-expanded', String(open));
+    document.querySelectorAll('#role-selector input[type="checkbox"]').forEach(cb => {
+      if (cb.value === role) cb.checked = open;
     });
+  }
+
+  // Messages appear as OCS status boxes (.overall-status) in the status region.
+  function showStatus(text, kind) {
+    const region = document.getElementById('volunteer-status');
+    region.replaceChildren();
+    const message = document.createElement('p');
+    message.className = `overall-status ${kind}`;
+    message.textContent = text;
+    region.append(message);
   }
 
   document.querySelector('.form-submit').addEventListener('click', async () => {
@@ -712,7 +205,7 @@ api_base: http://localhost:4500
     };
 
     if (!payload.first_name || !payload.last_name || !payload.email) {
-      alert('Please fill in First Name, Last Name, and Email.');
+      showStatus('Please fill in your first name, last name, and email.', 'error');
       return;
     }
 
@@ -726,14 +219,14 @@ api_base: http://localhost:4500
         credentials: 'include',
         body: JSON.stringify(payload)
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (res.ok) {
-        alert("Application submitted! We'll be in touch within 3 business days.");
+        showStatus("Application submitted! We'll be in touch within 3 business days.", 'success');
       } else {
-        alert('Error: ' + data.error);
+        showStatus('Your application could not be sent: ' + (data.error || data.message || 'please try again.'), 'error');
       }
     } catch (err) {
-      alert('Could not reach the server. Please try again.');
+      showStatus('Could not reach the server. Please try again.', 'error');
     }
   });
 </script>

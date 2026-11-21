@@ -1,29 +1,43 @@
+{%- comment -%}
+  Sidebar menu. include.menu (sections of items) defaults to _data/aesthetihawk_sidebar.yml.
+  Item keys: id, title, url, icon (SVG path markup, or a name from _data/aesthetihawk_icons.yml),
+  and optional show (signed-in, signed-out, staff, ...: the page script shows/hides it).
+  Links starting with http(s):// or mailto: are used as they are; http(s) links open in a new tab.
+{%- endcomment -%}
+{%- assign menu = include.menu | default: site.data.aesthetihawk_sidebar -%}
 <ul class="flex flex-col py-4 space-y-1">
-  {% for section in site.data.aesthetihawk_sidebar %}
+  {% for section in menu %}
     <li class="px-5">
       <div class="flex flex-row items-center h-8">
-        <div class="text-sm font-light tracking-wide text-neutral-500">{{ section.section }}</div>
+        <div class="text-xs uppercase tracking-wider text-neutral-400">{{ section.section }}</div>
       </div>
     </li>
 
     {% assign current = page.active_tab | default: "" | strip %}
     {% for item in section.items %}
       {% assign item_id = item.id | strip %}
-      <li>
-        <a id="sidebar-{{ item_id }}" href="{{ site.baseurl }}{{ item.url }}"
-           class="nav-item relative flex flex-row items-center h-11 focus:outline-none pr-6 border-l-4
+      {%- assign external = false -%}
+      {%- if item.url contains "://" or item.url contains "mailto:" -%}{%- assign external = true -%}{%- endif -%}
+      {%- assign icon = site.data.aesthetihawk_icons[item.icon] | default: item.icon -%}
+      <li{% if item.show %} data-show="{{ item.show }}"{% if item.show != 'signed-out' %} hidden{% endif %}{% endif %}>
+        <a id="sidebar-{{ item_id }}" href="{% if external %}{{ item.url }}{% else %}{{ site.baseurl }}{{ item.url }}{% endif %}"
+           {%- if external and item.url contains "://" %} target="_blank" rel="noopener"{% endif %}
+           {%- if current == item_id %} aria-current="page"{% endif %}
+           class="nav-item relative flex flex-row items-center h-11 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 pr-6 border-l-4
            {% if current == item_id %}
              bg-neutral-700 text-neutral-50 border-indigo-500
            {% else %}
-             text-neutral-600 border-transparent hover:text-neutral-50 hover:border-indigo-500
+             text-neutral-300 border-transparent hover:text-neutral-50 hover:border-indigo-500
            {% endif %}">
           <span class="inline-flex justify-center items-center ml-4">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                 xmlns="http://www.w3.org/2000/svg">
-              {{ item.icon }}
+                 xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"
+                 {%- unless item.icon contains "<" %} stroke-width="2" stroke-linecap="round" stroke-linejoin="round"{% endunless %}>
+              {{ icon }}
             </svg>
           </span>
           <span class="ml-2 text-sm tracking-wide truncate">{{ item.title }}</span>
+          {%- if external and item.url contains "://" %}<span class="sr-only"> (opens in a new tab)</span>{% endif %}
         </a>
       </li>
     {% endfor %}

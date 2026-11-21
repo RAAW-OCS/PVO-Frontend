@@ -45,45 +45,56 @@
       'fa': { name: 'Persian (Farsi)', code: 'fa' },
     };
 
+    // Text size 16px everywhere: the browser default the site uses when no theme is chosen
+    // (14px made choosing any theme, even 'Site Default', shrink the text)
     const SITE_DEFAULT = {
       bg: '#121212',
       text: '#F0F0F0',
       font: "Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial",
-      size: 14,
+      size: 16,
       accent: '#4CAFEF',
     };
 
     const PRESETS = {
       'Site Default': SITE_DEFAULT,
       Midnight: {
+        // lighter blue links: #3b82f6 was under 4.5:1 on the panels
         bg: '#0b1220', text: '#e6eef8',
         font: "Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial",
-        size: 14, accent: '#3b82f6',
+        size: 16, accent: '#60a5fa',
       },
       Light: {
-        bg: '#ffffff', text: '#FF80AA',
+        // dark grey text: the earlier pink (#FF80AA) on white was 2.3:1, too faint to read
+        bg: '#ffffff', text: '#1f2937',
         font: "Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial",
-        size: 14, accent: '#2563eb',
+        size: 16, accent: '#1d4ed8', // darker blue links: #2563eb was under 4.5:1 on the grey panels
       },
       Green: {
         bg: '#154734', text: '#e6f6ef',
         font: "Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial",
-        size: 14, accent: '#10b981',
+        size: 16, accent: '#10b981',
       },
       Sepia: {
-        bg: '#f4ecd8', text: '#A52A2A',
+        // darker brown text and links: #A52A2A text and #b45309 links were under 4.5:1 on the panels
+        bg: '#f4ecd8', text: '#7f1d1d',
         font: "Georgia, 'Times New Roman', Times, serif",
-        size: 14, accent: '#b45309',
+        size: 16, accent: '#9a3412',
       },
       Cyberpunk: {
         bg: '#0a0a0f', text: '#f0f0f0',
         font: "'Source Code Pro', monospace",
-        size: 14, accent: '#f72585',
+        size: 16, accent: '#f72585',
       },
       Ocean: {
         bg: '#0c1929', text: '#e0f2fe',
         font: "'Open Sans', Arial, sans-serif",
-        size: 15, accent: '#06b6d4',
+        size: 16, accent: '#06b6d4',
+      },
+      // White text, yellow links and highlights on black (WCAG AAA contrast)
+      'High Contrast': {
+        bg: '#000000', text: '#ffffff',
+        font: "Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial",
+        size: 16, accent: '#ffe14d',
       },
     };
 
@@ -220,7 +231,8 @@
       set('--ui-bg',     ColorUtils.adjustColor(bg, 20 * dir));
       set('--ui-border', ColorUtils.adjustColor(bg, 45 * dir));
 
-      set('--text-muted', lightBg ? '#6b7280' : ColorUtils.adjustColor(text, -60));
+      // #4b5563 on light themes: the earlier #6b7280 was under 4.5:1 on light panels and on Sepia
+      set('--text-muted', lightBg ? '#4b5563' : ColorUtils.adjustColor(text, -60));
 
       // Semantic priority colours
       if (lightBg) {
@@ -345,21 +357,55 @@
       };
     }
 
+    // Chrome stops reading one long utterance after about 15 seconds, so long text is
+    // queued a sentence or two at a time. The pieces are kept in `queue` so the browser
+    // does not garbage-collect them part-way (which also stops speech in Chrome).
+    const MAX_PIECE = 200;
+    let queue = [];
+
+    function pieces(text) {
+      const sentences = String(text || '').replace(/\s+/g, ' ').trim()
+        .match(/[^.!?]+[.!?]+["')\]]*\s*|[^.!?]+$/g) || [];
+      const out = [];
+      let current = '';
+      const push = () => { if (current.trim()) out.push(current.trim()); current = ''; };
+      sentences.forEach((sentence) => {
+        let rest = sentence;
+        while (rest.length > MAX_PIECE) {          // a very long sentence: break at a comma or space
+          push();
+          let cut = rest.lastIndexOf(', ', MAX_PIECE);
+          if (cut < MAX_PIECE / 2) cut = rest.lastIndexOf(' ', MAX_PIECE);
+          if (cut <= 0) cut = MAX_PIECE;
+          out.push(rest.slice(0, cut + 1).trim());
+          rest = rest.slice(cut + 1);
+        }
+        if ((current + rest).length > MAX_PIECE) push();
+        current += rest;
+      });
+      push();
+      return out;
+    }
+
+    /** Speak text with the saved voice, speed, pitch and volume. Returns the last
+     *  utterance (its onend fires when everything has been read), or null. */
     function speak(text, options = {}) {
       if (!('speechSynthesis' in window)) { console.warn('TTS not supported'); return null; }
       speechSynthesis.cancel();
       const settings  = getSettings();
-      const utterance = new SpeechSynthesisUtterance(text);
       const voiceName = options.voice || settings.voice;
-      if (voiceName) {
-        const voice = speechSynthesis.getVoices().find(v => v.name === voiceName);
+      const voice = voiceName ? speechSynthesis.getVoices().find(v => v.name === voiceName) : null;
+      queue = pieces(text).map((piece) => {
+        const utterance = new SpeechSynthesisUtterance(piece);
         if (voice) utterance.voice = voice;
-      }
-      utterance.rate   = options.rate   !== undefined ? options.rate   : settings.rate;
-      utterance.pitch  = options.pitch  !== undefined ? options.pitch  : settings.pitch;
-      utterance.volume = options.volume !== undefined ? options.volume : settings.volume;
-      speechSynthesis.speak(utterance);
-      return utterance;
+        utterance.rate   = options.rate   !== undefined ? options.rate   : settings.rate;
+        utterance.pitch  = options.pitch  !== undefined ? options.pitch  : settings.pitch;
+        utterance.volume = options.volume !== undefined ? options.volume : settings.volume;
+        return utterance;
+      });
+      if (!queue.length) return null;
+      if (speechSynthesis.paused) speechSynthesis.resume();
+      queue.forEach((utterance) => speechSynthesis.speak(utterance));
+      return queue[queue.length - 1];
     }
 
     function speakSelection() {
@@ -387,6 +433,22 @@
     }
 
     function resetPreferences() { ThemeEngine.reset(); }
+
+    /** The saved preferences, or null. */
+    function getPreferences() { return StorageManager.load(); }
+
+    /** Save preferences on this device and apply them now (used by on-page settings such as a toolbar). */
+    function savePreferences(prefs) {
+      StorageManager.save(prefs);
+      try { window.localStorage.removeItem(ConfigManager.RESET_FLAG_KEY); } catch (_) { /* storage off */ }
+      applyPreferences(prefs);
+    }
+
+    /** Forget saved preferences and go back to the site default look. */
+    function clearPreferences() {
+      StorageManager.clear();
+      ThemeEngine.reset();
+    }
     function applyLanguage(code) { TranslationEngine.apply(code); }
 
     function init() {
@@ -400,6 +462,9 @@
       init,
       applyPreferences,
       resetPreferences,
+      getPreferences,
+      savePreferences,
+      clearPreferences,
       applyLanguage,
       PRESETS:    ConfigManager.PRESETS,
       LANGUAGES:  ConfigManager.LANGUAGES,

@@ -1,6 +1,6 @@
 // Member Login page: log in, create an account, or continue as a guest.
 import { baseurl, getSession, safeNextUrl } from './api.js';
-import { createAccount, logIn, setStatus, startGuest, whileBusy } from './auth.js';
+import { createAccount, enableWhenReady, logIn, setStatus, startGuest, whileBusy } from './auth.js';
 
 function finish(statusElement, name, fallback) {
   setStatus(statusElement, `Welcome, ${name}. You are logged in.`, 'success');
@@ -23,6 +23,7 @@ function initLogIn() {
     }
     finish(status, result.name);
   });
+  enableWhenReady(form.querySelector('[type="submit"]'));
 }
 
 function initCreateAccount() {
@@ -48,6 +49,7 @@ function initCreateAccount() {
     }
     finish(status, result.name);
   });
+  enableWhenReady(form.querySelector('[type="submit"]'));
 }
 
 function initGuest() {
@@ -63,6 +65,7 @@ function initGuest() {
     // guests usually come to try the survey
     finish(status, result.name, `${baseurl}/member-profile/#survey`);
   });
+  enableWhenReady(button);
 }
 
 initLogIn();

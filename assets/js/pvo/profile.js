@@ -37,7 +37,10 @@ function renderAccount(user, survey) {
   document.querySelector('[data-profile-uid]').textContent = user.role === 'Guest' ? 'Temporary guest session' : `Username: ${user.uid}`;
   const role = document.querySelector('[data-profile-role]');
   role.textContent = roleLabel(user.role);
-  role.className = `pvo-badge pvo-badge--${user.role.toLowerCase()}`;
+  // staff roles get the indigo outline the OCS sidebar uses for the current item
+  const staff = user.role === 'Admin' || user.role === 'Organizer';
+  role.className = `inline-block mt-2 px-3 py-0.5 rounded-full text-xs font-bold bg-neutral-700 text-neutral-50${staff ? ' border border-indigo-500' : ''}`;
+  role.dataset.role = user.role;
 
   // Members' "connection to the military" answer also sets their member type (on the backend).
   // Administrators, organizers, and guests keep their role, so they do not see the hint.
@@ -65,6 +68,8 @@ function renderAccount(user, survey) {
     const row = document.createElement('div');
     const dt = document.createElement('dt');
     const dd = document.createElement('dd');
+    dt.className = 'text-xs uppercase tracking-wider text-neutral-400';
+    dd.className = 'm-0';
     dt.textContent = term;
     dd.textContent = value;
     row.append(dt, dd);

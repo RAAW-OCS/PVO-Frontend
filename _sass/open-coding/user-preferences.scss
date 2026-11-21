@@ -180,12 +180,77 @@ html.user-theme-active body {
     border-radius: var(--pref-btn-radius) !important;
   }
 
+  // Button sizes — elements/buttons/common.scss sizes .small/.medium/.large in px, so they kept
+  // the same size when a larger text size was chosen. The same sizes in rem follow the chosen
+  // text size (identical at the default 16px). Values: min-height, padding y, padding x,
+  // font size, line height, in px at 16px.
+  @each $name, $v in (small: (28, 4, 10, 15, 20), medium: (35, 7, 14, 15, 20), large: (50, 14, 20, 17, 22)) {
+    button.#{$name},
+    a.#{$name},
+    input.#{$name} {
+      height: auto;
+      min-height: nth($v, 1) / 16 * 1rem;
+      padding: (nth($v, 2) / 16 * 1rem) (nth($v, 3) / 16 * 1rem);
+      font-size: nth($v, 4) / 16 * 1rem;
+      line-height: nth($v, 5) / 16 * 1rem;
+    }
+  }
+
   button,
   .btn,
   a.btn {
     color: inherit !important;
     transition: background-color $transition-base ease,
                 border-color $transition-base ease;
+  }
+
+  // OCS button colours (elements/buttons/filled.scss, forms/oauth.scss) are greys and blues made
+  // for the dark default look. With a theme, the text took the theme colour (or, on links, the
+  // accent colour) and could be unreadable on them, such as dark text on grey on light themes.
+  // With a theme, the buttons take the theme's own panel colours, so the text always contrasts.
+  .primary,
+  a.primary {
+    background-color: var(--panel-mid) !important;
+    color: var(--pref-text-color) !important;
+  }
+
+  .secondary,
+  a.secondary {
+    background-color: var(--panel) !important;
+    color: var(--pref-text-color) !important;
+  }
+
+  .filledTinted,
+  a.filledTinted {
+    background-color: var(--bg-2) !important;
+    color: var(--pref-accent-color) !important;
+  }
+
+  // Theme panel colours sit close to the page colour, so the buttons get an edge that can be seen
+  .primary,
+  .secondary,
+  .filledTinted {
+    border: 1px solid var(--text-muted) !important;
+  }
+
+  // OCS glow tiles (materials/glow.scss) have a fixed #1e1e1e face; with a light theme the theme
+  // text was dark on it. With a theme the face is the panel colour.
+  .glowOnHover,
+  .glow:after {
+    background: var(--panel) !important;
+  }
+
+
+  // Top bar: the OCS tinted glass is a dark grey glass. Over a light theme it turned mid grey,
+  // and neither dark text nor links could be read on it. With a theme it uses the panel colour.
+  .site-header {
+    background: var(--panel) !important;
+    border-bottom-color: var(--ui-border) !important;
+  }
+
+  .site-title,
+  .site-title:visited {
+    color: var(--pref-text-color) !important;
   }
 }
 
@@ -286,6 +351,39 @@ html.user-theme-active body {
   .border-blue-500 {
     color: var(--pref-accent-color) !important;
     border-color: var(--pref-accent-color) !important;
+  }
+
+  // Buttons and badges on a strong Tailwind colour keep white text. The theme text colour (which
+  // .text-white above now gives) would be dark on these with a light theme. After .text-white
+  // so it wins.
+  // (names quoted: unquoted, Sass reads red, orange, ... as colours and warns)
+  @each $hue in ("red", "orange", "green", "emerald", "teal", "blue", "indigo", "violet", "purple", "pink", "rose") {
+    @each $shade in (600, 700, 800, 900) {
+      .bg-#{$hue}-#{$shade},
+      .bg-#{$hue}-#{$shade} * {
+        color: #ffffff !important;
+      }
+    }
+  }
+
+  // OCS chat Send button (chatbot.scss: white on #0000ff)
+  .msger-send-btn {
+    color: #ffffff !important;
+  }
+
+  // Tables: the site styles give headers (#323232) and even rows (#222222) fixed dark colours,
+  // which made the theme text unreadable on light themes
+  table th {
+    background-color: var(--panel) !important;
+    border-color: var(--ui-border) !important;
+  }
+
+  table tr:nth-child(even) {
+    background-color: var(--bg-1) !important;
+  }
+
+  table td {
+    border-color: var(--ui-border) !important;
   }
 }
 

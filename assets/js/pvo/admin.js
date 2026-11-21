@@ -4,6 +4,7 @@ import {
   ASSIGNABLE_ROLES, apiFetch, canManageEvents, escapeHtml, formatShortDate, formatTimeRange,
   getSession, isAdmin, mediaInfo, loadEvents, loginUrl, messageFrom, roleLabel,
 } from './api.js';
+import { setStatus } from './auth.js';
 
 const MAX_SIDE = 1600;
 const MAX_UPLOAD_BYTES = 3_400_000;
@@ -17,10 +18,12 @@ const els = {
   formTitle: document.querySelector('[data-event-form-title]'),
   submit: document.querySelector('[data-event-submit]'),
   cancel: document.querySelector('[data-cancel-edit]'),
+  cancelWrap: document.querySelector('[data-cancel-edit-wrap]'),
   status: document.getElementById('event-status'),
   preview: document.querySelector('[data-picture-preview]'),
   fileInput: document.getElementById('event-picture'),
   removePicture: document.querySelector('[data-remove-picture]'),
+  removePictureWrap: document.querySelector('[data-remove-picture-wrap]'),
   list: document.querySelector('[data-event-list]'),
   empty: document.querySelector('[data-event-empty]'),
   count: document.querySelector('[data-event-count]'),
@@ -37,11 +40,6 @@ const state = {
   keepImage: '', // image_url already stored on the event being edited
 };
 
-function setStatus(element, text, kind = 'error') {
-  element.textContent = text;
-  element.classList.toggle('is-error', kind === 'error');
-  element.classList.toggle('is-success', kind === 'success');
-}
 
 function showGate(title, text, { signIn = true } = {}) {
   els.gate.querySelector('[data-gate-title]').textContent = title;
@@ -59,6 +57,8 @@ function initTabs() {
       const active = other === tab;
       other.setAttribute('aria-selected', String(active));
       other.tabIndex = active ? 0 : -1;
+      other.classList.toggle('primary', active); // OCS buttons: the selected tab is primary
+      other.classList.toggle('secondary', !active);
       document.getElementById(other.getAttribute('aria-controls')).hidden = !active;
     });
     if (focus) tab.focus();
@@ -136,14 +136,14 @@ function renderPreview() {
     ? { type: 'image', src: state.pendingImage, thumb: state.pendingImage }
     : mediaInfo(linked) || mediaInfo(state.keepImage);
   if (!media) {
-    els.preview.innerHTML = '<span class="pvo-picture__empty">No picture yet</span>';
+    els.preview.innerHTML = '<span class="text-sm text-neutral-400">No picture yet</span>';
   } else if (media.type === 'video') {
-    els.preview.innerHTML = `<video src="${escapeHtml(media.src)}" controls preload="metadata" aria-label="Preview of the event video"></video>`;
+    els.preview.innerHTML = `<video class="w-full h-full" src="${escapeHtml(media.src)}" controls preload="metadata" aria-label="Preview of the event video"></video>`;
   } else {
     const label = media.type === 'youtube' ? 'Preview of the YouTube video' : 'Preview of the event picture';
-    els.preview.innerHTML = `<img src="${escapeHtml(media.thumb)}" alt="${label}">${media.type === 'youtube' ? '<span class="pvo-recap__badge">Video</span>' : ''}`;
+    els.preview.innerHTML = `<img class="w-full h-full object-cover" src="${escapeHtml(media.thumb)}" alt="${label}">${media.type === 'youtube' ? '<span class="absolute top-2 left-2 px-2 py-0.5 rounded text-xs font-bold bg-neutral-900 text-neutral-50">Video</span>' : ''}`;
   }
-  els.removePicture.hidden = !media;
+  els.removePictureWrap.hidden = !media;
 }
 
 function clearPicture() {
@@ -188,7 +188,7 @@ function resetForm() {
   clearPicture();
   els.formTitle.textContent = 'Post an event';
   els.submit.textContent = 'Publish event';
-  els.cancel.hidden = true;
+  els.cancelWrap.hidden = true;
 }
 
 function startEditing(event) {
@@ -207,7 +207,7 @@ function startEditing(event) {
   renderPreview();
   els.formTitle.textContent = `Editing “${event.title}”`;
   els.submit.textContent = 'Save changes';
-  els.cancel.hidden = false;
+  els.cancelWrap.hidden = false;
   setStatus(els.status, '');
   els.form.scrollIntoView({ behavior: 'smooth', block: 'start' });
   els.form.title.focus({ preventScroll: true });
@@ -299,17 +299,17 @@ function renderEvents() {
     const picture = mediaInfo(event.image_url)?.thumb;
     const isPast = (event.end || event.start) < now;
     return `
-      <li class="pvo-admin__event${isPast ? ' is-past' : ''}">
+      <li class="m-0 py-3 flex flex-wrap items-center gap-3" data-admin-event${isPast ? ' data-past' : ''}>
         ${picture
-    ? `<img class="pvo-admin__thumb" src="${escapeHtml(picture)}" alt="">`
-    : '<span class="pvo-admin__thumb pvo-admin__thumb--empty" aria-hidden="true"></span>'}
-        <div class="pvo-admin__event-text">
-          <span class="pvo-admin__event-title">${escapeHtml(event.title)}${isPast ? ' <span class="pvo-badge pvo-badge--past">Past</span>' : ''}</span>
-          <span class="pvo-admin__event-meta">${escapeHtml(formatShortDate(event.start))} · ${escapeHtml(formatTimeRange(event.start, event.end))}</span>
-          ${event.location ? `<span class="pvo-admin__event-meta">${escapeHtml(event.location)}</span>` : ''}
+    ? `<img class="w-16 h-16 rounded-lg object-cover shrink-0" src="${escapeHtml(picture)}" alt="">`
+    : '<span class="w-16 h-16 rounded-lg bg-neutral-900 border border-neutral-700 shrink-0" aria-hidden="true"></span>'}
+        <div class="flex-1 min-w-[12rem]">
+          <span class="block font-bold" data-admin-event-title>${escapeHtml(event.title)}${isPast ? ' <span class="ml-1 px-2 py-0.5 rounded-full text-xs bg-neutral-700 text-neutral-50">Past</span>' : ''}</span>
+          <span class="block text-sm text-neutral-400">${escapeHtml(formatShortDate(event.start))} · ${escapeHtml(formatTimeRange(event.start, event.end))}</span>
+          ${event.location ? `<span class="block text-sm text-neutral-400">${escapeHtml(event.location)}</span>` : ''}
         </div>
-        <div class="pvo-admin__event-actions">
-          <button class="small filledTinted primary" type="button" data-edit="${event.id}">Edit</button>
+        <div class="flex gap-2">
+          <button class="small secondary" type="button" data-edit="${event.id}">Edit</button>
           <button class="small secondary" type="button" data-delete="${event.id}">Delete</button>
         </div>
       </li>`;
@@ -361,12 +361,12 @@ function withArticle(role) {
 }
 
 function roleCell(user) {
-  if (user.uid === state.me.uid) return `<span class="pvo-badge pvo-badge--admin">${roleLabel(user.role)} (you)</span>`;
-  if (user.role === 'Guest') return '<span class="pvo-badge pvo-badge--guest">Guest</span>';
+  if (user.uid === state.me.uid) return `<span class="inline-block px-3 py-0.5 rounded-full text-xs font-bold bg-neutral-700 text-neutral-50 border border-indigo-500">${roleLabel(user.role)} (you)</span>`;
+  if (user.role === 'Guest') return '<span class="inline-block px-3 py-0.5 rounded-full text-xs font-bold bg-neutral-700 text-neutral-50">Guest</span>';
   const options = ASSIGNABLE.includes(user.role) ? ASSIGNABLE : [user.role, ...ASSIGNABLE];
   return `
-    <label class="pvo-visually-hidden" for="role-${escapeHtml(user.uid)}">Role for ${escapeHtml(user.name)}</label>
-    <select class="pvo-role-select" id="role-${escapeHtml(user.uid)}" data-role-for="${escapeHtml(user.uid)}" data-current="${escapeHtml(user.role)}">
+    <label class="sr-only" for="role-${escapeHtml(user.uid)}">Role for ${escapeHtml(user.name)}</label>
+    <select class="min-w-[10rem]" id="role-${escapeHtml(user.uid)}" data-role-for="${escapeHtml(user.uid)}" data-current="${escapeHtml(user.role)}">
       ${options.map((role) => `<option value="${escapeHtml(role)}"${role === user.role ? ' selected' : ''}${ASSIGNABLE.includes(role) ? '' : ' disabled'}>${escapeHtml(roleLabel(role))}</option>`).join('')}
     </select>`;
 }
@@ -380,10 +380,10 @@ async function loadPeople() {
   }
   els.people.innerHTML = result.data.map((user) => `
     <tr>
-      <td data-label="Name">${escapeHtml(user.name)}</td>
-      <td data-label="Username">${escapeHtml(user.uid)}</td>
-      <td data-label="Email">${escapeHtml(user.email) || '<span class="pvo-muted">None</span>'}</td>
-      <td data-label="Role">${roleCell(user)}</td>
+      <td class="py-2 pr-4" data-label="Name">${escapeHtml(user.name)}</td>
+      <td class="py-2 pr-4" data-label="Username">${escapeHtml(user.uid)}</td>
+      <td class="py-2 pr-4" data-label="Email">${escapeHtml(user.email) || '<span class="text-neutral-400">None</span>'}</td>
+      <td class="py-2" data-label="Role">${roleCell(user)}</td>
     </tr>`).join('');
 }
 

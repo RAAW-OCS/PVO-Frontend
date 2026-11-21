@@ -2,7 +2,13 @@
 <html lang="en">
 
 <head>
-    <title>{{ page.title }}</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ page.title | default: site.title }}{% if layout.title_suffix and page.title != layout.title_suffix %} | {{ layout.title_suffix }}{% endif %}</title>
+    {%- assign ah_description = page.description | default: layout.description %}
+    {%- if ah_description %}
+    <meta name="description" content="{{ ah_description | strip_html | normalize_whitespace | escape }}">
+    {%- endif %}
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
@@ -15,17 +21,39 @@
     <script src="{{ site.baseurl }}/assets/js/keyboard-shortcuts.js" defer></script>
 </head>
 
+{%- comment -%}
+  Layouts that build on this one can set, in their front matter:
+    sidebar: name of a menu in _config.yml (default: _data/aesthetihawk_sidebar.yml)
+    header_logo / header_title / header_links: logo path, site name, and an include for the
+      right-hand side of the top bar (default: the OCS logo and site pages)
+    hide_title: true to leave out the page title heading (also settable per page)
+    title_class: extra classes for that heading
+{%- endcomment -%}
+{%- assign ah_menu = site.data.aesthetihawk_sidebar %}
+{%- if layout.sidebar and site[layout.sidebar] %}{% assign ah_menu = site[layout.sidebar] %}{% endif %}
+{%- comment -%}
+  Count only sections that have items. With no usable menu the sidebar and its space are left out:
+  for example a `jekyll serve` started before _config.yml changed still holds the older pvo_menu,
+  whose shape (main: / children:) gives sections with no items, which drew an empty sidebar.
+{%- endcomment -%}
+{%- assign ah_menu_size = 0 %}
+{%- for ah_section in ah_menu %}{% if ah_section.items.size > 0 %}{% assign ah_menu_size = ah_menu_size | plus: 1 %}{% endif %}{% endfor %}
 
 <body class="min-h-screen flex flex-col flex-auto flex-shrink-0 transition-colors user-theme-root">
+    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[1000000000] focus:px-4 focus:py-2 focus:rounded bg-neutral-800 text-neutral-50">Skip to main content</a>
+
     <!-- navbar -->
-    {%- include aesthetihawk/header.html -%}
+    {%- include aesthetihawk/header.html logo=layout.header_logo title=layout.header_title links=layout.header_links menu=ah_menu_size -%}
 
     <div class="min-h-screen flex flex-col flex-auto flex-shrink-0 antialiased mt-[53px] theme-inner">
 
-        <!-- Sidebar -->
-        <div class="fixed left-0 top-[53px] w-64 h-full border-r flex flex-col lesson-sidebar">
+        <!-- Sidebar: always shown above 768px; opened with the Menu button at 768px and below.
+             768px is where OCS lesson-player.scss switches .lesson-main to full width, so the two agree.
+             The width is in px so that larger text (OCS Preferences) does not squeeze the page. -->
+        {%- if ah_menu_size > 0 %}
+        <nav id="aesthetihawk-sidebar" aria-label="Site menu" class="fixed left-0 top-[53px] bottom-0 w-[256px] border-r hidden min-[769px]:flex flex-col lesson-sidebar z-40 max-[768px]:bg-neutral-900">
 
-            <!-- welcome section 
+            <!-- welcome section
             <div class="p-6 flex flex-col items-center bg-neutral-800">
                 <h2 class="text-lg font-semibold text-center mb-6" id="sidebarWelcome">Welcome. Please log in.</h2>
             </div>
@@ -34,19 +62,47 @@
             <!-- Scrollable menu section -->
             <div class="overflow-y-auto flex-grow">
                 <!-- sidebar menu -->
-                {%- include aesthetihawk/sidebar.html -%}
+                {%- include aesthetihawk/sidebar.html menu=ah_menu -%}
             </div>
-        </div>
+        </nav>
+        {%- endif %}
 
         <!-- Main Content Area -->
-        <div class="ml-64 p-8 lesson-main">
+        <main id="main" tabindex="-1" class="{% if ah_menu_size > 0 %}min-[769px]:ml-[256px] {% endif %}p-4 md:p-8 lesson-main">
+            {%- unless page.hide_title or layout.hide_title %}
             <div class="flex justify-between items-center mb-8">
-                <h1 class="text-2xl font-bold">{{page.title}}</h1>
+                <h1 class="text-2xl font-bold{% if layout.title_class %} {{ layout.title_class }}{% endif %}">{{page.title}}</h1>
             </div>
+            {%- endunless %}
 
             {{ content }}
-        </div>
+        </main>
     </div>
+
+    <!-- Menu button for phones: show / hide the sidebar -->
+    <script>
+        (function () {
+            var toggle = document.querySelector('[data-sidebar-toggle]');
+            var sidebar = document.getElementById('aesthetihawk-sidebar');
+            if (!toggle || !sidebar) return;
+            function setOpen(open) {
+                sidebar.classList.toggle('hidden', !open);
+                sidebar.classList.toggle('flex', open);
+                toggle.setAttribute('aria-expanded', String(open));
+            }
+            toggle.addEventListener('click', function () { setOpen(sidebar.classList.contains('hidden')); });
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') {
+                    setOpen(false);
+                    toggle.focus();
+                }
+            });
+            // close after following a link on a phone
+            sidebar.addEventListener('click', function (event) {
+                if (event.target.closest('a') && window.matchMedia('(max-width: 768px)').matches) setOpen(false);
+            });
+        })();
+    </script>
 </body>
 
 </html>

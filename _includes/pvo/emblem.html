@@ -1,8 +1,11 @@
 {%- comment -%}
-  Simple drawn emblems for the branch strip. These are original symbols, not
-  official seals or insignia. Usage: {% include pvo/emblem.html name="navy" %}
+  Drawn medallions for the branch strip: original symbols, not official seals or insignia.
+  The colour is part of the artwork (an SVG fill), sized with Tailwind.
+  Usage: {% include pvo/emblem.html name="navy" color="#13336b" class="w-14 h-14" %}
 {%- endcomment -%}
-<svg class="pvo-emblem" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+<svg class="{{ include.class | default: 'w-14 h-14' }}" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+<circle cx="24" cy="24" r="22.5" fill="{{ include.color | default: '#3a4559' }}" stroke="#ffffff" stroke-width="1.5"/>
+<g transform="translate(10.8 10.8) scale(0.55)" fill="none" stroke="#ffffff" stroke-width="3.8" stroke-linecap="round" stroke-linejoin="round">
 {%- case include.name -%}
 {%- when 'army' -%}
   <polygon points="24,6.5 28.1,18.6 40.8,18.7 30.6,26.3 34.4,38.4 24,31 13.6,38.4 17.4,26.3 7.2,18.7 19.9,18.6"/>
@@ -28,4 +31,5 @@
   <path d="M24 5.5 38 10.5V22c0 9.2-5.8 16-14 20.5C15.8 38 10 31.2 10 22V10.5Z"/>
   <polygon points="24,15 26.2,21.2 32.7,21.3 27.5,25.2 29.4,31.4 24,27.6 18.6,31.4 20.5,25.2 15.3,21.3 21.8,21.2"/>
 {%- endcase -%}
+</g>
 </svg>

@@ -11,6 +11,14 @@ export const pythonURI =
     ? "http://localhost:8426"
     : "https://pvoteam-api.opencodingsociety.com";
 
+// OCS Java (Spring) backend. PVO does not use it, but shared OCS scripts import it
+// (assets/js/api/logout.js, the Preferences panel), so it must be exported.
+export const javaURI =
+  (location.hostname === "localhost" ||
+   location.hostname === "127.0.0.1")
+    ? "http://localhost:8585"
+    : "https://spring.opencodingsociety.com";
+
 export const fetchOptions = {
     method: 'GET',
     mode: 'cors',

@@ -55,12 +55,31 @@ export async function startGuest() {
   return { ok: false, message: messageFrom(result, 'We could not start a guest session. Please try again.') };
 }
 
-export function setStatus(element, text, kind = 'error') {
-  if (!element) return;
-  element.textContent = text;
-  element.classList.toggle('is-error', kind === 'error');
-  element.classList.toggle('is-success', kind === 'success');
-  element.classList.toggle('is-info', kind === 'info');
+/**
+ * Show a message in a status region (an element with role="status"), as an OCS status box:
+ * .overall-status with .error, .success, or .partial (information). Empty text clears it.
+ * The region itself stays in the page so screen readers announce each new message.
+ */
+export function setStatus(region, text, kind = 'error') {
+  if (!region) return;
+  region.replaceChildren();
+  if (!text) return;
+  const message = document.createElement('p');
+  message.className = `overall-status ${{ success: 'success', info: 'partial' }[kind] || 'error'}`;
+  message.dataset.kind = kind;
+  message.textContent = text;
+  region.append(message);
+}
+
+/**
+ * Login, sign-up and guest buttons start out disabled in the HTML, so nothing can be sent before
+ * this script is listening (an early "Log in" would otherwise put the password in the address bar).
+ * Call this once the form's handlers are attached.
+ */
+export function enableWhenReady(...buttons) {
+  buttons.forEach((button) => {
+    if (button) button.disabled = false;
+  });
 }
 
 /** Disable a button and swap its label while a task runs. */

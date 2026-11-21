@@ -1,0 +1,21 @@
+---
+layout: pvo
+title: Accessibility
+permalink: /accessibility/
+search_exclude: true
+show_reading_time: false
+active_tab: accessibility
+---
+{%- comment -%}
+  Open Coding Society Preferences (_includes/aesthetihawk/preferences.html, the same panel as the OCS
+  Dashboard): themes, text, colours, read-aloud voice and speed, and translation. sync="off" keeps the
+  choices on this device (PVO has no OCS account server); ai="off" leaves out the Ask AI theme panel.
+{%- endcomment -%}
+<p class="max-w-3xl mb-6">Change how the site looks and sounds. These are the Open Coding Society preferences: colour themes, text size and font, read-aloud voice and speed, and page translation. Your choices are saved on this device and apply to every page.</p>
+
+<section class="p-4 rounded-lg bg-neutral-800 border border-neutral-700 max-w-3xl mb-6" aria-labelledby="read-aloud-help">
+  <h2 class="text-xl font-bold m-0" id="read-aloud-help">Reading pages aloud</h2>
+  <p class="mb-0">Press <strong>Read aloud</strong> at the top of any page. It reads the text you highlighted (drag across it, or press and hold on a phone), or the whole page if nothing is highlighted. Press it again to stop. Pick the voice and speed below, under Text-to-Speech.</p>
+</section>
+
+{% include aesthetihawk/preferences.html sync="off" ai="off" %}

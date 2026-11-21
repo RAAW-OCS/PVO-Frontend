@@ -91,6 +91,9 @@ The capstone goal—helping veterans and their families navigate PVO services—
 ## How to Run
 
 Follow the **Local Teacher Demo** steps above to run the Jekyll frontend and Flask backend together. The chatbot also requires its configured Groq API key.
+
+**Which `.env`:** the one that matters is the backend's (`PVO-Backend/.env`, set up as its README describes). It holds the login secret, the admin accounts (`PVO_ADMINS`) and the Groq key. This repo's `.env` is read only by the OCS helper scripts in `scripts/` (GitHub and Kasm settings, same names as the backend README); the website never reads it. git ignores both, and any `.env.*` backups.
+
 ---
 
 ## What's Been Done
@@ -131,35 +134,65 @@ Before any wider rollout, the tools — especially the chatbot and prescreener �
 | Admin Tools: Events tab, and People & Roles (administrators only) | `/admin/` | Administrators and event organizers |
 | Resource Hub (with the Veterans Crisis Line) | `/resources/` | Everyone |
 | Employment Board | `/jobs/` | Everyone |
-| Photos & Videos (pictures and clips from past events; the **Photos & videos** button on the homepage, or menu: Get Involved → Photos & videos) | `/gallery/` | Everyone |
+| Photos & Videos (pictures and clips from past events) | `/gallery/` | Everyone |
+| Accessibility: the OCS Preferences (themes, text size, read-aloud voice and speed, translation) | `/accessibility/` | Everyone |
+| PVO Assistant (full-page chat) | `/pvo-chatbot/` | Everyone |
+| Request assistance (prescreener), Volunteer, Application Assist | `/prescreener`, `/volunteer`, `/pvo-application-assist` | Everyone |
 
-- **Menu:** the header and footer links come from `pvo_menu` in `_config.yml`. Add, rename, or reorder items there; `children` makes a drop-down. Restart `jekyll serve` after editing `_config.yml`. Signed out, the header shows **Member Login**; signed in, it shows **Welcome, name**, **Admin** (administrators and event organizers), and **Log out**.
-- **Layout:** PVO pages use `layout: pvo` (`_layouts/pvo.html`) with includes in `_includes/pvo/` (the homepage login/survey bar is `_includes/pvo/member-bar.html`).
-- **Styles: Open Coding Society design system.** Pages are built from OCS ("Aesthetihawk") pieces, not custom ones:
-  - Buttons: `<button class="medium filledHighlight primary">` and friends (`small/medium/large` + `primary`, `secondary`, `filledHighlight`, `filledTinted`). The same classes work on links.
-  - Forms: OCS `.form-group` fields, `.login-container` / `.login-card` / `.signup-card`, and `.switch` toggles.
-  - Materials: `.tintedGlass` (header, drop-downs) and `.glowOnHover` (branch and hub tiles).
-  - Typography: semantic `h1`–`h3` and `p` with OCS's global fonts and colours. Do not restyle text.
-  - The PVO Sass in `_sass/open-coding/pvo/` only does layout, using OCS mixins (`widget-container`, `header-bar`, `modal-container`, `select-control`, `status-indicator-state`, `hover-darken`) and OCS variables (`$bg-1`, `$blue1`, `$lightBlue1`, `$spacing-*`, `$radius-*`, `$breakpoint-*`). It is imported at the end of `_sass/open-coding/_main.scss`; every rule is scoped to `body.pvo` or a `pvo-` class, so the rest of the OCS site is unaffected. Do not add `<style>` blocks or inline styles to the pages.
-- **Branches:** the seven branches at the top of the homepage come from `_data/pvo_branches.yml`. Their emblems are original drawings, not official seals. If PVO gets permission to use official insignia, add an `image:` path to each entry.
+- **Built only from Open Coding Society pieces.** Every PVO page uses the OCS design system; there is no PVO Sass and no `<style>` block or `style="..."` in any PVO page.
+  - **Layout:** `layout: pvo` (`_layouts/pvo.html`) is a thin child of the OCS **Aesthetihawk** layout (`_layouts/aesthetihawk.html`): the OCS top bar, the OCS left sidebar menu, and the OCS Preferences script on every page. At 768px wide and below (phones and portrait tablets, where OCS `lesson-player.scss` switches to the full-width layout) the sidebar opens from the **Menu** button. If the menu is missing (for example a `jekyll serve` started before `_config.yml` changed), the layout leaves the sidebar and its space out.
+  - **Components:** OCS buttons (`small` / `medium` / `large` + `primary`, `secondary`, `filledTinted`), OCS card panels (`p-4 rounded-lg bg-neutral-800 border border-neutral-700`, recoloured by the OCS themes), `.glowOnHover` tiles, `.login-container` / `.login-card` / `.signup-card`, `.form-group` fields, `.switch` toggles, `.overall-status` messages (`error`, `success`, `partial`), the OCS calendar (FullCalendar 5.11 styled by `calendar.scss`, as on the OCS Calendar page), the OCS chat window (`.msger`, `.msg`) and the OCS modal (`.modal`, `.modal-content`, `.close`).
+  - **Arrangement:** Tailwind utility classes, as OCS pages use them (the Aesthetihawk layout loads Tailwind).
+  - **Contrast rules for OCS buttons** (measured against WCAG AA): on a `<button>`, use `primary` (main actions) or `secondary`; on a link, use `filledTinted primary` (main actions) or `primary`. OCS forces link text to its link blue, so `filledHighlight` (any element), `filledTinted` on a `<button>`, and `secondary` on a link are too faint to read.
+  - **Two OCS quirks handled with Tailwind:** OCS `calendar.scss` hides every `h1` site-wide, so PVO headings carry `!block`; Tailwind resets paragraph margins, so paragraphs carry `my-3` / `mb-6`. Links inside sentences are underlined (the wrapper in `_layouts/pvo.html`), because OCS removes link underlines.
+  - **OCS themes flatten grey backgrounds.** Once a visitor picks any theme, OCS `user-preferences.scss` paints every element whose class contains `bg-neutral` the panel colour, with `!important`, including state classes such as `[&.active]:bg-indigo-500` on that element. Anything that must stand out from its card, such as a progress track, step dots or a chat bubble, gets an outline (`border border-neutral-700`, which the themes recolour to their border shade) and no `bg-neutral` class on the part that changes colour. Progress bars are `<progress>` elements whose value the script sets, not widths in a `style` attribute.
+  - **Colours:** the highlight colour is the Aesthetihawk sidebar's `indigo-500`; greys are the Tailwind `neutral` shades the OCS themes recolour. The only hex colours in PVO files are the PVO emblem drawing, the OCS default accent as a fallback in `reader.js`, and the white background painted behind photos when the admin page shrinks them to JPEG.
+- **Menu:** the sidebar comes from `pvo_menu` in `_config.yml`: sections of items with an `id`, `title`, `url`, `icon` (a name from `_data/aesthetihawk_icons.yml`) and optional `show` (`signed-in`, `signed-out`, `staff`). A page with `active_tab: <id>` highlights its item. After editing `_config.yml`, restart the site with `make stop`, `rm -f .jekyll-metadata`, `make`. `make` runs the server in the background, so Ctrl+C does not stop it. `--incremental` skips pages whose files did not change, so it keeps the old menu unless `.jekyll-metadata` is removed. The top bar shows **Accessibility**, **Member Login** (signed out) or **Welcome, name**, **Admin** (administrators and event organizers) and **Log out** (signed in), from `_includes/pvo/header-links.html`.
+- **Branches:** the seven branches at the top of the homepage come from `_data/pvo_branches.yml` (name, colour, motto, link). Their emblems are original drawings, not official seals. If PVO gets permission to use official insignia, add an `image:` path to each entry.
 - **Scripts:** `assets/js/pvo/` (`site.js` runs on every PVO page; each page loads its own script through `pvo_script` in its front matter).
 - **Resource Hub and Employment Board content:** edit `_data/pvo_resources.yml` and `_data/pvo_jobs.yml`. Only post real job openings, with the employer's permission. The board shows a note when there are none.
 - **Photos & Videos:** once an event's date has passed, if it has a picture (uploaded, or a YouTube or `.mp4` link in the picture field) it appears on `/gallery/` and in "From recent events" on the homepage. Upcoming events stay on the calendar only.
-- **Adding events:** sign in as an administrator or event organizer, open **Admin** in the header, and use **Post an event** (title, date, start/end time, place, description, optional picture or video). Published events appear on the homepage calendar right away.
+- **Adding events:** sign in as an administrator or event organizer, open **Admin**, and use **Post an event** (title, date, start/end time, place, description, optional picture or video). Published events appear on the homepage calendar right away. The calendar's **Coming up** list (the first view on phones) leaves out events that already ended earlier today; the **Month** view still shows them.
 - **Surveys:** the veteran profile survey (service, interests, how they like to meet up, about me, accessibility needs, and a consent switch for introductions) helps PVO connect veterans with shared interests. The volunteer survey (kinds of help, availability) is separate and optional. Each form saves only its own answers.
 - **Log in:** members sign in with their **username** (any capitalisation) or the **email** on their account, not their display name. The backend refuses a login that matches more than one account.
 
-### Accessibility toolbar
+### Accessibility
 
-Every PVO page has an **Accessibility** button in the top bar and a round floating one in the bottom-left corner that stays on screen while scrolling. Settings are saved in the visitor's browser (`localStorage`, key `pvoAccessibility`) and applied before the page paints (`assets/js/pvo/a11y-boot.js`).
+Accessibility comes from the **Open Coding Society Preferences** (`assets/js/user-preferences.js`, `window.SitePreferences`), the same system as the OCS Dashboard. There are two ways in, and both save the same OCS settings in the visitor's browser, so they always agree and apply on every page.
 
-| Feature | How it works |
+**Accessibility toolbar:** the **Accessibility** button in the top bar, or the round button at the bottom left that stays on screen. Files: `_includes/pvo/a11y-panel.html` (OCS buttons, `.switch` toggles and `.form-group`), `assets/js/pvo/a11y.js`, `reader.js` and `a11y-boot.js`.
+
+| Feature | What it does |
 |---|---|
-| Text size: 100%, 115%, 130%, 150% | Scales the root font size; PVO text and the OCS button/input sizes are in `rem` so they all grow. The header switches to the Menu button earlier at larger sizes. |
-| Color theme: Dark (default OCS), Light, Warm, Navy, High contrast | `_sass/open-coding/pvo/_themes.scss` redefines the OCS CSS custom properties (`--bg-1`, `--panel-mid`, `--ui-border`, `--white1`, `--lightBlue1`, ...), the same ones the OCS ThemeEngine uses, so OCS components follow the theme. Every theme meets WCAG AA contrast. |
-| Read aloud: read the page, or read selected text; pause, resume, stop; three speeds | **Read this page** starts at the first paragraph on screen and reads to the end, highlighting each block. **Read selected text** reads only what the visitor highlighted (a highlight from the last two minutes still counts if pressing the button cleared it). Speaks through the OCS TTSEngine (`window.SitePreferences.speak`) a sentence or two at a time, because Chrome cuts off long speech. Pause stops the current sentence and Resume reads it again, which also works on Android, where the browser's own pause does nothing. Code: `assets/js/pvo/reader.js`. |
-| Reading aids: underline all links, extra line spacing, reduce motion | Switches in the panel (OCS `.switch` toggles). |
-| Reset all | Back to the default OCS look. |
+| Text size | 100%, 115%, 130%, 150%. This is the OCS text-size preference, so OCS buttons grow with the text too (`user-preferences.scss`). |
+| Colour theme | Dark, Light, Warm, Navy, High contrast. These are the OCS presets Site Default, Light, Sepia, Midnight and High Contrast (white on black with yellow links). |
+| Read aloud | **Read this page** starts at the part on screen and outlines each paragraph as it reads. **Read selected text** reads only what you highlighted. A player has **Pause / Resume** and **Stop**. Speed is Slower, Normal or Faster; this is the OCS speech speed, so a speed set on the Accessibility page shows here too. It uses the OCS speech engine. |
+| Reading aids | **Underline all links**, **Extra line spacing**, **Reduce motion**. These are Tailwind classes on `<body>` that are applied before the page shows. |
+| Reset all | Clears the OCS preferences and the reading aids. |
+
+Settings saved by the earlier PVO toolbar are moved over the first time someone visits.
+
+**Accessibility page** (`/accessibility/`): the full OCS Preferences panel, shared with the Dashboard through `_includes/aesthetihawk/preferences.html`. On PVO it keeps choices on the device and leaves out the Ask AI panel. It has:
+- voice, pitch and volume;
+- fonts and custom colours;
+- your own saved themes;
+- button style;
+- page translation (Google Translate).
+
+**Keyboard and screen readers:**
+- skip link;
+- labelled menu and main areas;
+- calendar events open with Enter or Space;
+- the modal and the toolbar move focus in, and return it when closed (Escape closes both);
+- every form field has a label;
+- the chosen size and theme are marked with a check, not only with colour.
+
+**Contrast:** the default look and all five toolbar themes pass an automated WCAG 2.1 AA check (axe-core) on every PVO page. That includes the event modal, the assistant, the toolbar, the read-aloud player and the admin views. Getting the themes there took changes to OCS itself:
+- The OCS theme Sass (`_sass/open-coding/user-preferences.scss`) now gives buttons, the top bar, tables and the glow tiles the theme's own colours. They used to keep fixed dark-mode greys, which made dark text unreadable on light themes.
+- Buttons on strong colours keep white text.
+- The Light, Sepia and Midnight presets have link and text colours that pass, and the grey for muted text on light themes is darker.
+
+**Login buttons** (the homepage bar and the Member Login page) stay disabled until the page's script is ready. Without this, an early click did nothing, and an early **Log in** put the password in the address bar.
 
 The Veterans Crisis Line (988, then press 1; text 838255) is in the footer of every PVO page and at the top of the Resource Hub.
 

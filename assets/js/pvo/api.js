@@ -167,16 +167,16 @@ export function mediaInfo(url) {
   return src ? { type: 'image', src, thumb: src } : null;
 }
 
-/** Player/picture markup for the event dialog. */
+/** Player/picture markup for the event modal (Tailwind sizing). */
 export function mediaHtml(media, title = '') {
   if (!media) return '';
   if (media.type === 'youtube') {
-    return `<div class="pvo-media pvo-media--video"><iframe src="${escapeHtml(media.embed)}" title="${escapeHtml(`Video: ${title}`)}" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>`;
+    return `<div class="w-full aspect-video mb-4"><iframe class="w-full h-full rounded-lg" src="${escapeHtml(media.embed)}" title="${escapeHtml(`Video: ${title}`)}" allow="accelerometer; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div>`;
   }
   if (media.type === 'video') {
-    return `<div class="pvo-media pvo-media--video"><video src="${escapeHtml(media.src)}" controls preload="metadata" aria-label="${escapeHtml(`Video: ${title}`)}"></video></div>`;
+    return `<video class="w-full rounded-lg mb-4" src="${escapeHtml(media.src)}" controls preload="metadata" aria-label="${escapeHtml(`Video: ${title}`)}"></video>`;
   }
-  return `<img class="pvo-dialog__image" src="${escapeHtml(media.src)}" alt="">`;
+  return `<img class="w-full max-h-[60vh] object-contain rounded-lg mb-4" src="${escapeHtml(media.src)}" alt="">`;
 }
 
 export function escapeHtml(value) {

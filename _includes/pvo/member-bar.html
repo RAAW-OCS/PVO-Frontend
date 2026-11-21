@@ -1,51 +1,49 @@
 {%- comment -%}
-  Member login + survey strip shown at the top of the homepage.
+  Member login + survey bar at the top of the homepage (OCS card panel, OCS buttons and inputs).
   Signed out: quick login form, create account, continue as guest, and the survey.
-  Signed in: welcome message with profile, survey, admin (admins only), and log out.
+  Signed in: welcome message with profile, survey, admin (staff only), and log out.
+  Elements with data-show are shown/hidden by assets/js/pvo/site.js.
 {%- endcomment -%}
-<section class="pvo-memberbar" aria-label="Member login and survey">
-  <div class="pvo-wrap">
-    <div class="pvo-memberbar__card">
+<section class="p-4 rounded-lg bg-neutral-800 border border-neutral-700" aria-label="Member login and survey">
 
-      <div class="pvo-memberbar__login" data-show="signed-out">
-        <form class="pvo-memberbar__form" data-quick-login novalidate>
-          <h2 class="pvo-memberbar__title">Member Login</h2>
-          <div class="form-group pvo-memberbar__field">
-            <label class="pvo-visually-hidden" for="quick-uid">Username or email</label>
-            <input id="quick-uid" name="uid" type="text" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Username or email">
-          </div>
-          <div class="form-group pvo-memberbar__field">
-            <label class="pvo-visually-hidden" for="quick-password">Password</label>
-            <input id="quick-password" name="password" type="password" autocomplete="current-password" placeholder="Password">
-          </div>
-          <button class="medium filledHighlight primary" type="submit">Log in</button>
+  <div data-show="signed-out">
+    <div class="grid gap-4 lg:grid-cols-[3fr_2fr] lg:items-center">
+      <div>
+        <form class="flex flex-col sm:flex-row sm:items-center gap-2" data-quick-login novalidate>
+          <h2 class="text-lg font-bold m-0 sm:mr-2 shrink-0">Member Login</h2>
+          <label class="sr-only" for="quick-uid">Username or email</label>
+          <input class="mediumInput flex-1 min-w-0" id="quick-uid" name="uid" type="text" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Username or email">
+          <label class="sr-only" for="quick-password">Password</label>
+          <input class="mediumInput flex-1 min-w-0" id="quick-password" name="password" type="password" autocomplete="current-password" placeholder="Password">
+          <button class="medium primary shrink-0" type="submit" disabled>Log in</button>
         </form>
-        <div class="pvo-memberbar__more">
+        <div class="flex flex-wrap items-center gap-3 mt-3 text-sm">
           <a href="{{ '/member-login/' | relative_url }}#create">Create an account</a>
           <span aria-hidden="true">&middot;</span>
-          <button class="small secondary" type="button" data-quick-guest>Continue as guest</button>
-          <div class="pvo-status" role="status" aria-live="polite" data-quick-status></div>
+          <button class="small secondary" type="button" data-quick-guest disabled>Continue as guest</button>
         </div>
+        <div role="status" aria-live="polite" data-quick-status></div>
       </div>
-
-      <div class="pvo-memberbar__welcome" data-show="signed-in" hidden>
-        <div>
-          <h2 class="pvo-memberbar__title">Welcome back, <span data-pvo-name>member</span></h2>
-          <span class="pvo-memberbar__sub">Signed in as <span data-pvo-role>Member</span>. Your PVO member tools are ready.</span>
-        </div>
-        <div class="pvo-memberbar__actions">
-          <a class="medium primary" href="{{ '/member-profile/' | relative_url }}">My Profile</a>
-          <a class="medium filledTinted primary" href="{{ '/member-profile/' | relative_url }}#survey">Member Survey</a>
-          <a class="medium primary" href="{{ '/admin/' | relative_url }}" data-show="staff" hidden>Admin Tools</a>
-          <button class="medium secondary" type="button" data-pvo-signout>Log out</button>
-        </div>
+      <div class="flex flex-col sm:flex-row sm:items-center gap-3 lg:border-l lg:border-neutral-700 lg:pl-4">
+        <p class="m-0 text-sm"><strong>Veteran profile</strong> Share your service and interests so we can connect you with veterans who enjoy the same things.</p>
+        <a class="medium filledTinted primary shrink-0 inline-flex items-center justify-center" href="{{ '/member-profile/' | relative_url }}#survey">Take the survey</a>
       </div>
-
-      <div class="pvo-memberbar__survey" data-show="signed-out">
-        <span class="pvo-memberbar__survey-text"><strong>Veteran profile</strong> Share your service and interests so we can connect you with veterans who enjoy the same things.</span>
-        <a class="medium filledTinted primary" href="{{ '/member-profile/' | relative_url }}#survey">Take the survey</a>
-      </div>
-
     </div>
   </div>
+
+  <div data-show="signed-in" hidden>
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      <div>
+        <h2 class="text-lg font-bold m-0" tabindex="-1" data-welcome-title>Welcome back, <span data-pvo-name>member</span></h2>
+        <p class="m-0 text-sm">Signed in as <span data-pvo-role>member</span>. Your PVO member tools are ready.</p>
+      </div>
+      <div class="flex flex-wrap gap-2" data-member-actions>
+        <a class="medium primary inline-flex items-center" href="{{ '/member-profile/' | relative_url }}">My Profile</a>
+        <a class="medium filledTinted primary inline-flex items-center" href="{{ '/member-profile/' | relative_url }}#survey">Member Survey</a>
+        <span data-show="staff" hidden><a class="medium primary inline-flex items-center" href="{{ '/admin/' | relative_url }}">Admin Tools</a></span>
+        <button class="medium secondary" type="button" data-pvo-signout>Log out</button>
+      </div>
+    </div>
+  </div>
+
 </section>

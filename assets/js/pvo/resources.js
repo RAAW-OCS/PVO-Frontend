@@ -29,7 +29,12 @@ search?.addEventListener('input', apply);
 filters.forEach((button) => {
   button.addEventListener('click', () => {
     category = button.dataset.resourceFilter;
-    filters.forEach((other) => other.setAttribute('aria-pressed', String(other === button)));
+    filters.forEach((other) => {
+      const pressed = other === button;
+      other.setAttribute('aria-pressed', String(pressed));
+      other.classList.toggle('primary', pressed); // OCS buttons: the chosen filter is primary
+      other.classList.toggle('secondary', !pressed);
+    });
     apply();
   });
 });

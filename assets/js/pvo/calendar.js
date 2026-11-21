@@ -1,188 +1,92 @@
-// Month calendar + agenda used on the homepage.
-import {
-  dayKey, escapeHtml, formatLongDate, formatShortDate, formatTimeRange, mediaHtml, mediaInfo, sameDay,
-} from './api.js';
+// Homepage calendar: FullCalendar styled by OCS (calendar.scss), as on the OCS Calendar page.
+// Events open in the OCS modal. FullCalendar itself is loaded by index.md from the same CDN
+// version the OCS Calendar page uses.
+import { escapeHtml, formatLongDate, formatTimeRange, mediaHtml, mediaInfo } from './api.js';
+import { openModal } from './modal.js';
 
-const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const monthTitle = new Intl.DateTimeFormat(undefined, { month: 'long', year: 'numeric' });
-const monthShort = new Intl.DateTimeFormat(undefined, { month: 'short' });
-
-function startOfDay(date) {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-}
-
-/** Every calendar day an event touches (multi-day events appear on each day). */
-function eventDays(event) {
-  const days = [];
-  const last = startOfDay(event.end && event.end > event.start ? event.end : event.start);
-  for (let day = startOfDay(event.start); day <= last && days.length < 62; day.setDate(day.getDate() + 1)) {
-    days.push(dayKey(day));
-  }
-  return days;
-}
-
-export function eventCardHtml(event, { compact = false } = {}) {
-  const media = mediaInfo(event.image_url);
-  const thumb = media?.thumb;
+/** Event details for the OCS modal. */
+export function eventDetailsHtml(event) {
   return `
-    <button class="pvo-event${compact ? ' pvo-event--compact' : ''}" type="button" data-event-id="${event.id}">
-      <span class="pvo-event__date" aria-hidden="true">
-        <span class="pvo-event__month">${escapeHtml(monthShort.format(event.start))}</span>
-        <span class="pvo-event__day">${event.start.getDate()}</span>
-      </span>
-      <span class="pvo-event__body">
-        <span class="pvo-event__title">${escapeHtml(event.title)}</span>
-        <span class="pvo-event__meta">${escapeHtml(formatShortDate(event.start))} · ${escapeHtml(formatTimeRange(event.start, event.end))}</span>
-        ${event.location ? `<span class="pvo-event__meta">${escapeHtml(event.location)}</span>` : ''}
-      </span>
-      ${thumb && !compact ? `<img class="pvo-event__thumb" src="${escapeHtml(thumb)}" alt="" loading="lazy">` : ''}
-    </button>`;
-}
-
-export function openEventDialog(dialog, event) {
-  dialog.querySelector('[data-dialog-body]').innerHTML = `
     ${mediaHtml(mediaInfo(event.image_url), event.title)}
-    <div class="pvo-dialog__text">
-      <span class="pvo-dialog__when">${escapeHtml(formatLongDate(event.start))}<br>${escapeHtml(formatTimeRange(event.start, event.end))}</span>
-      <h2 class="pvo-dialog__title" id="pvo-event-dialog-title">${escapeHtml(event.title)}</h2>
-      ${event.location ? `<span class="pvo-dialog__where">${escapeHtml(event.location)}</span>` : ''}
-      <p class="pvo-dialog__desc">${escapeHtml(event.description)}</p>
-    </div>`;
-  if (typeof dialog.showModal === 'function') dialog.showModal();
-  else dialog.setAttribute('open', '');
+    <p class="text-sm text-neutral-400 m-0">${escapeHtml(formatLongDate(event.start))} &middot; ${escapeHtml(formatTimeRange(event.start, event.end))}</p>
+    <h2 id="pvo-modal-title" class="text-2xl font-bold mt-2 mb-2">${escapeHtml(event.title)}</h2>
+    ${event.location ? `<p class="m-0 mb-3"><span class="text-neutral-400">Where:</span> ${escapeHtml(event.location)}</p>` : ''}
+    <p class="whitespace-pre-line">${escapeHtml(event.description)}</p>`;
 }
 
-export function initCalendar(root, events, { today = new Date() } = {}) {
-  const title = root.querySelector('[data-cal-title]');
-  const body = root.querySelector('[data-cal-body]');
-  const agendaTitle = root.querySelector('[data-agenda-title]');
-  const agendaList = root.querySelector('[data-agenda-list]');
-  const agendaStatus = root.querySelector('[data-agenda-status]');
-  const showAll = root.querySelector('[data-agenda-all]');
-  const dialog = document.querySelector('[data-event-dialog]');
-
-  const byDay = new Map();
-  events.forEach((event) => {
-    eventDays(event).forEach((key) => {
-      if (!byDay.has(key)) byDay.set(key, []);
-      byDay.get(key).push(event);
-    });
-  });
-
-  let view = new Date(today.getFullYear(), today.getMonth(), 1);
-  let selected = null;
-
-  function renderAgenda() {
-    let list;
-    if (selected) {
-      list = byDay.get(dayKey(selected)) || [];
-      agendaTitle.textContent = formatLongDate(selected);
-      showAll.hidden = false;
-    } else {
-      const now = startOfDay(today);
-      list = events.filter((event) => (event.end || event.start) >= now).slice(0, 6);
-      agendaTitle.textContent = 'Coming up';
-      showAll.hidden = true;
-    }
-    agendaList.innerHTML = list.map((event) => `<li>${eventCardHtml(event)}</li>`).join('');
-    if (list.length) {
-      agendaStatus.hidden = true;
-    } else {
-      agendaStatus.hidden = false;
-      agendaStatus.textContent = selected
-        ? 'Nothing is scheduled on this day.'
-        : 'No upcoming events are posted yet. New workdays and gatherings appear here as soon as they are scheduled.';
-    }
-  }
-
-  function renderMonth() {
-    title.textContent = monthTitle.format(view);
-    const first = new Date(view.getFullYear(), view.getMonth(), 1);
-    const cursor = new Date(first);
-    cursor.setDate(1 - first.getDay());
-    const rows = [];
-    for (let week = 0; week < 6; week += 1) {
-      const cells = [];
-      for (let weekday = 0; weekday < 7; weekday += 1) {
-        const date = new Date(cursor);
-        const key = dayKey(date);
-        const dayEvents = byDay.get(key) || [];
-        const classes = ['pvo-cal__day'];
-        if (date.getMonth() !== view.getMonth()) classes.push('is-outside');
-        if (sameDay(date, today)) classes.push('is-today');
-        if (selected && sameDay(date, selected)) classes.push('is-selected');
-        if (dayEvents.length) classes.push('has-events');
-        const label = `${formatLongDate(date)}${dayEvents.length ? `, ${dayEvents.length} event${dayEvents.length > 1 ? 's' : ''}` : ''}`;
-        const names = dayEvents.slice(0, 2)
-          .map((event) => `<span class="pvo-cal__chip">${escapeHtml(event.title)}</span>`).join('');
-        const more = dayEvents.length > 2 ? `<span class="pvo-cal__more">+${dayEvents.length - 2} more</span>` : '';
-        cells.push(`
-          <td>
-            <button type="button" class="${classes.join(' ')}" data-day="${key}" aria-label="${escapeHtml(label)}"${selected && sameDay(date, selected) ? ' aria-pressed="true"' : ''}>
-              <span class="pvo-cal__num">${date.getDate()}</span>
-              ${dayEvents.length ? `<span class="pvo-cal__dots" aria-hidden="true">${'<i></i>'.repeat(Math.min(dayEvents.length, 3))}</span>` : ''}
-              <span class="pvo-cal__chips" aria-hidden="true">${names}${more}</span>
-            </button>
-          </td>`);
-        cursor.setDate(cursor.getDate() + 1);
-      }
-      rows.push(`<tr>${cells.join('')}</tr>`);
-      if (cursor.getMonth() !== view.getMonth() && week >= 4) break;
-    }
-    body.innerHTML = rows.join('');
-  }
-
-  function render() {
-    renderMonth();
-    renderAgenda();
-  }
-
-  root.querySelector('[data-cal-head]').innerHTML = WEEKDAYS.map((day) => `<th scope="col"><abbr title="${day}">${day}</abbr></th>`).join('');
-  root.querySelector('[data-cal-prev]').addEventListener('click', () => {
-    view = new Date(view.getFullYear(), view.getMonth() - 1, 1);
-    renderMonth();
-  });
-  root.querySelector('[data-cal-next]').addEventListener('click', () => {
-    view = new Date(view.getFullYear(), view.getMonth() + 1, 1);
-    renderMonth();
-  });
-  root.querySelector('[data-cal-today]').addEventListener('click', () => {
-    view = new Date(today.getFullYear(), today.getMonth(), 1);
-    selected = null;
-    render();
-  });
-  showAll.addEventListener('click', () => {
-    selected = null;
-    render();
-  });
-  body.addEventListener('click', (event) => {
-    const button = event.target.closest('[data-day]');
-    if (!button) return;
-    const [year, month, day] = button.dataset.day.split('-').map(Number);
-    const date = new Date(year, month - 1, day);
-    selected = selected && sameDay(selected, date) ? null : date;
-    if (date.getMonth() !== view.getMonth()) view = new Date(year, month - 1, 1);
-    render();
-    root.querySelector(`[data-day="${button.dataset.day}"]`)?.focus();
-  });
-  agendaList.addEventListener('click', (event) => {
-    const card = event.target.closest('[data-event-id]');
-    const match = card && events.find((item) => String(item.id) === card.dataset.eventId);
-    if (match && dialog) openEventDialog(dialog, match);
-  });
-
-  render();
+export function openEvent(event) {
+  openModal(eventDetailsHtml(event));
 }
 
-export function initEventDialog() {
-  const dialog = document.querySelector('[data-event-dialog]');
-  if (!dialog) return;
-  dialog.querySelector('[data-dialog-close]').addEventListener('click', () => dialog.close());
-  dialog.addEventListener('click', (event) => {
-    if (event.target === dialog) dialog.close();
+/** Make an event in the calendar reachable and usable with the keyboard. */
+function makeKeyboardFriendly(info) {
+  // list view: the link inside the title cell (one tab stop, no button role on a table cell)
+  const target = info.el.querySelector('.fc-list-event-title a') || info.el;
+  target.setAttribute('tabindex', '0');
+  target.setAttribute('role', 'button');
+  const end = info.event.end || null;
+  target.setAttribute('aria-label', `${info.event.title}, ${formatLongDate(info.event.start)}, ${formatTimeRange(info.event.start, end)}`);
+  target.addEventListener('keydown', (keyEvent) => {
+    if (keyEvent.key === 'Enter' || keyEvent.key === ' ') {
+      keyEvent.preventDefault();
+      target.click();
+    }
   });
-  // stop any video that was playing
-  dialog.addEventListener('close', () => {
-    dialog.querySelector('[data-dialog-body]').innerHTML = '';
+}
+
+/**
+ * Render the calendar into element. Phones start on the "Coming up" list, larger screens on the month.
+ * Returns the FullCalendar instance, or null when FullCalendar could not be loaded.
+ */
+export function initCalendar(element, events, { ok = true } = {}) {
+  if (!window.FullCalendar) {
+    element.innerHTML = '<p class="overall-status partial">The calendar could not be shown. Please refresh the page.</p>';
+    return null;
+  }
+  const narrow = window.matchMedia('(max-width: 639px)').matches;
+  // "Coming up" starts at midnight, so on its current page it would still list events that ended
+  // earlier today. Those are left out there (the month grid and earlier pages keep them).
+  let viewType = narrow ? 'listUpcoming' : 'dayGridMonth';
+  const eventsFor = ({ start, end }) => {
+    const now = Date.now();
+    const hideEnded = viewType === 'listUpcoming' && start.valueOf() <= now && now < end.valueOf();
+    return events
+      .filter((event) => !hideEnded || new Date(event.end || event.start).valueOf() >= now)
+      .map((event) => ({ id: String(event.id), title: event.title, start: event.start, end: event.end || undefined }));
+  };
+  const calendar = new window.FullCalendar.Calendar(element, {
+    initialView: viewType,
+    headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,listUpcoming' },
+    buttonText: { today: 'Today' },
+    views: {
+      dayGridMonth: { buttonText: 'Month' },
+      listUpcoming: { type: 'list', duration: { days: 120 }, buttonText: 'Coming up' },
+    },
+    height: 'auto',
+    // a sticky day-name row gets FullCalendar's white "page" background and would sit under the fixed OCS top bar
+    stickyHeaderDates: false,
+    dayMaxEvents: 3,
+    events: (range, success) => success(eventsFor(range)),
+    // FullCalendar fetches for a new view before reporting it, so fetch again once the view has changed
+    datesSet: (info) => {
+      if (info.view.type === viewType) return;
+      viewType = info.view.type;
+      calendar.refetchEvents();
+    },
+    noEventsContent: ok
+      ? 'No upcoming events are posted yet. New workdays and gatherings appear here as soon as they are scheduled.'
+      : 'The calendar is temporarily unavailable. Please try again later.',
+    eventClick: (info) => {
+      info.jsEvent.preventDefault();
+      const match = events.find((event) => String(event.id) === info.event.id);
+      if (!match) return;
+      // FullCalendar stops the browser focusing a clicked event, so focus it here:
+      // the modal returns focus to whatever had it when it opened
+      (info.el.querySelector('[role="button"]') || info.el).focus({ preventScroll: true });
+      openEvent(match);
+    },
+    eventDidMount: makeKeyboardFriendly,
   });
+  calendar.render();
+  return calendar;
 }

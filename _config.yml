@@ -140,33 +140,37 @@ minima:
 #   children  Turns the item into a drop-down menu. `note` is the short line under each link.
 #   show      Account items only: signed-out, signed-in, or admin.
 #   greet     Account item shown as "Welcome, <name>" in the header once signed in.
+# PVO menu: the left sidebar on every PVO page (OCS Aesthetihawk layout,
+# _includes/aesthetihawk/sidebar.html). Sections and items appear in this order.
+#   id     names the item; a page with `active_tab: <id>` highlights it
+#   icon   a name from _data/aesthetihawk_icons.yml
+#   show   signed-in / signed-out / staff (administrators and event organizers): who sees it
+# Restart `jekyll serve` after editing this file.
 pvo_menu:
-  main:
-    - title: Events
-      url: /#calendar
-    - title: Survey
-      url: /member-profile/#survey
-    - title: Get Help
-      children:
-        - { title: Request assistance, url: /prescreener, note: "A few questions to see how PVO can help" }
-        - { title: Resource Hub, url: /resources/, note: "Health care, benefits, housing, and the Crisis Line" }
-        - { title: Employment Board, url: /jobs/, note: "Local openings and job programs for veterans" }
-        - { title: Ask the assistant, url: /pvo-chatbot/, note: "Quick answers about services and events" }
-        - { title: Contact PVO, url: "mailto:contact@powayveterans.org", note: "contact@powayveterans.org" }
-    - title: Get Involved
-      children:
-        - { title: Volunteer, url: /volunteer, note: "Help on repair projects and at events" }
-        - { title: Photos & videos, url: /gallery/, note: "Pictures and clips from past events" }
-        - { title: Donate, url: "https://powayveterans.org/donate/", note: "Funds go straight to veteran assistance" }
-    - title: About
-      url: /#about
-  account:
-    - { title: Member Login, url: /member-login/, show: signed-out }
-    - { title: My Profile, url: /member-profile/, show: signed-in, greet: true }
-    - { title: Admin, url: /admin/, show: staff }   # administrators and event organizers
-  cta:
-    title: Request assistance
-    url: /prescreener
+  - section: Poway Veterans
+    items:
+      - { id: home, title: Home, url: /, icon: home }
+      - { id: events, title: Events calendar, url: /#calendar, icon: calendar }
+      - { id: gallery, title: Photos & videos, url: /gallery/, icon: image }
+      - { id: about, title: About PVO, url: /#about, icon: flag }
+      - { id: accessibility, title: Accessibility, url: /accessibility/, icon: access }
+  - section: Get help
+    items:
+      - { id: prescreener, title: Request assistance, url: /prescreener, icon: hammer }
+      - { id: resources, title: Resource Hub, url: /resources/, icon: book }
+      - { id: jobs, title: Employment Board, url: /jobs/, icon: briefcase }
+      - { id: assistant, title: Ask the assistant, url: /pvo-chatbot/, icon: chat }
+      - { id: contact, title: Contact PVO, url: "mailto:contact@powayveterans.org", icon: mail }
+  - section: Get involved
+    items:
+      - { id: volunteer, title: Volunteer, url: /volunteer, icon: hands }
+      - { id: survey, title: Veteran survey, url: /member-profile/#survey, icon: clipboard }
+      - { id: donate, title: Donate, url: "https://powayveterans.org/donate/", icon: heart }
+  - section: Members
+    items:
+      - { id: login, title: Member Login, url: /member-login/, icon: login, show: signed-out }
+      - { id: profile, title: My Profile, url: /member-profile/, icon: user, show: signed-in }
+      - { id: admin, title: Admin Tools, url: /admin/, icon: key, show: staff }
 
 pvo_contact:
   phone: "(858) 206-8854"

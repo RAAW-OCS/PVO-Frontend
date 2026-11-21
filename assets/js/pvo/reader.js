@@ -1,24 +1,28 @@
-// Read aloud for the accessibility toolbar. Speaks through the OCS TTSEngine
-// (window.SitePreferences.speak, from assets/js/user-preferences.js).
+// Read aloud for the accessibility toolbar. Speaks through the OCS text-to-speech engine
+// (window.SitePreferences.speak in assets/js/user-preferences.js), so the voice, pitch and
+// volume chosen on the Accessibility page are used.
 //
 // "Read this page" starts at the part of the page you are looking at and reads to the end,
-// highlighting each paragraph. "Read selected text" reads only the text you highlighted.
+// outlining each paragraph as it goes. "Read selected text" reads only the text you highlighted.
 //
-// Chrome quirks this works around:
-//  - speech longer than about 15 seconds can stop part-way, so text is spoken a sentence
-//    or two at a time;
-//  - if the page does not keep a reference to the utterance, Chrome may never report that
-//    it finished, so the next part never starts;
-//  - an utterance occasionally reports "interrupted" for no reason; reading carries on
-//    unless the visitor pressed Stop;
+// Browser quirks this works around:
+//  - Chrome can stop speech longer than about 15 seconds part-way, so text is spoken a
+//    sentence or two at a time;
+//  - an utterance occasionally reports an error for no reason; reading carries on unless the
+//    visitor pressed Stop;
 //  - speechSynthesis.pause() does nothing on Android and some voices never resume after it,
 //    so Pause stops the current sentence and Resume reads that sentence again.
 
-const BLOCKS = 'h1, h2, h3, h4, p, li, dt, dd, label.switch, legend, .pvo-next__event, .pvo-resource, .pvo-recap';
-const SKIP = '[hidden], [aria-hidden="true"], .pvo-visually-hidden, nav, dialog:not([open]), [data-a11y-panel], [data-reader], [data-chat]';
-const MAX_CHUNK = 200;          // characters per utterance
+const BLOCKS = 'h1, h2, h3, h4, p, li, dt, dd, th, td, figcaption, blockquote, legend, label.switch';
+// The FullCalendar grid is left out (read cell by cell it is just dates); the next-event card and
+// the 'Coming up' list say the same thing in sentences.
+const SKIP = '[hidden], [aria-hidden="true"], .sr-only, nav, dialog:not([open]), .modal, .fc, [data-a11y-panel], [data-reader], [data-chat]';
+const OUTSIDE = '[data-a11y-panel], [data-reader], [data-chat]';
+const MAX_CHUNK = 200;           // characters per utterance
 const SELECTION_MEMORY = 120000; // a highlight made in the last 2 minutes still counts
 const GAP_MS = 60;               // pause between utterances
+// Outline around the paragraph being read, in the OCS accent colour of the chosen theme
+const READING = ['outline', 'outline-[3px]', 'outline-offset-4', 'outline-[var(--pref-accent-color,#4CAFEF)]', 'rounded-sm'];
 
 function isVisible(element) {
   if (element.closest(SKIP)) return false;
@@ -74,7 +78,8 @@ export function chunkText(text) {
 }
 
 export function createReader({ getRate = () => 1, reduceMotion = () => false } = {}) {
-  const supported = 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
+  const engine = window.SitePreferences;
+  const supported = 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window && typeof engine?.speak === 'function';
   const bar = document.querySelector('[data-reader]');
   const status = bar?.querySelector('[data-reader-status]');
   const pauseButton = bar?.querySelector('[data-reader-pause]');
@@ -97,22 +102,12 @@ export function createReader({ getRate = () => 1, reduceMotion = () => false } =
     const text = selection ? selection.toString().trim() : '';
     if (!text || !selection.rangeCount) return;
     const node = selection.anchorNode?.nodeType === 1 ? selection.anchorNode : selection.anchorNode?.parentElement;
-    if (node?.closest('[data-a11y-panel], [data-reader], [data-chat]')) return;
+    if (node?.closest(OUTSIDE)) return;
     remembered = { text, range: selection.getRangeAt(0).cloneRange(), time: Date.now() };
   });
 
   function speak(text, onDone) {
-    const rate = getRate();
-    const engine = window.SitePreferences;
-    let utterance;
-    if (window.speechSynthesis.paused) window.speechSynthesis.resume();
-    if (engine && typeof engine.speak === 'function') {
-      utterance = engine.speak(text, { rate }); // OCS TTSEngine
-    } else {
-      utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = rate;
-      window.speechSynthesis.speak(utterance);
-    }
+    const utterance = engine.speak(text, { rate: getRate() }); // OCS TTSEngine
     activeUtterance = utterance;
     if (!utterance) {
       onDone();
@@ -124,15 +119,15 @@ export function createReader({ getRate = () => 1, reduceMotion = () => false } =
       done = true;
       onDone();
     };
-    utterance.onend = finish;
-    utterance.onerror = finish; // carry on; pressing Stop is what ends reading
+    utterance.addEventListener('end', finish);
+    utterance.addEventListener('error', finish); // carry on; pressing Stop is what ends reading
   }
 
   function highlight(element) {
-    if (current) current.classList.remove('pvo-reading');
+    if (current) current.classList.remove(...READING);
     current = element;
     if (!element) return;
-    element.classList.add('pvo-reading');
+    element.classList.add(...READING);
     element.scrollIntoView({ block: 'center', behavior: reduceMotion() ? 'auto' : 'smooth' });
   }
 
@@ -177,7 +172,7 @@ export function createReader({ getRate = () => 1, reduceMotion = () => false } =
     paused = true;
     if (speakingIndex !== null) index = speakingIndex; // read it again on Resume
     speakingIndex = null;
-    window.speechSynthesis.cancel();
+    engine.stopSpeaking();
     pauseButton.textContent = 'Resume';
     status.textContent = 'Paused';
   }
@@ -189,6 +184,12 @@ export function createReader({ getRate = () => 1, reduceMotion = () => false } =
     session += 1;
     const id = session;
     window.setTimeout(() => next(id), GAP_MS);
+  }
+
+  function stop() {
+    session += 1;
+    if (supported) engine.stopSpeaking();
+    finish();
   }
 
   function start(items, statusLabel) {
@@ -203,12 +204,6 @@ export function createReader({ getRate = () => 1, reduceMotion = () => false } =
     const id = session;
     window.setTimeout(() => next(id), GAP_MS); // give Chrome a moment after cancel()
     return true;
-  }
-
-  function stop() {
-    session += 1;
-    if (supported) window.speechSynthesis.cancel();
-    finish();
   }
 
   function toItems(element, text) {
@@ -234,7 +229,7 @@ export function createReader({ getRate = () => 1, reduceMotion = () => false } =
     }
     if (!text) return false;
     remembered = null; // a highlight is read once; highlight again to hear it again
-    if (range) {
+    if (range && selection) {
       // keep the words being read highlighted on the page
       selection.removeAllRanges();
       selection.addRange(range);

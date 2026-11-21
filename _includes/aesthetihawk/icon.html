@@ -1,0 +1,5 @@
+{%- comment -%}
+  Line icon from _data/aesthetihawk_icons.yml. Sized with Tailwind (default w-5 h-5), drawn in currentColor.
+  Usage: {% include aesthetihawk/icon.html name="calendar" class="w-6 h-6" %}
+{%- endcomment -%}
+<svg class="{{ include.class | default: 'w-5 h-5' }} shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">{{ site.data.aesthetihawk_icons[include.name] }}</svg>

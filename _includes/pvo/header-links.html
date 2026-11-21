@@ -1,0 +1,14 @@
+{%- comment -%}
+  Right-hand side of the OCS top bar on PVO pages (passed to _includes/aesthetihawk/header.html).
+  Sign-in state is filled in by assets/js/pvo/site.js: elements with data-show are shown or hidden
+  with the `hidden` attribute, so responsive Tailwind display classes go on the element inside.
+{%- endcomment -%}
+<button type="button" class="small primary inline-flex items-center gap-1" aria-controls="pvo-a11y" aria-expanded="false" data-a11y-open
+        title="Text size, colours, read aloud and reading aids">
+  {%- include aesthetihawk/icon.html name="access" class="w-4 h-4" -%}<span class="sr-only sm:not-sr-only">Accessibility</span>
+</button>
+<span data-show="signed-out"><a class="small filledTinted primary inline-flex items-center whitespace-nowrap" href="{{ '/member-login/' | relative_url }}">Member Login</a></span>
+<span data-show="signed-in" hidden><a class="hidden lg:inline text-sm" href="{{ '/member-profile/' | relative_url }}">Welcome, <span data-pvo-name>member</span></a></span>
+<span data-show="staff" hidden><a class="small primary hidden sm:inline-flex items-center" href="{{ '/admin/' | relative_url }}">Admin</a></span>
+<span data-show="signed-in" hidden><button type="button" class="small primary hidden sm:inline-flex items-center" data-pvo-signout>Log out</button></span>
+<a class="small primary hidden xl:inline-flex items-center" href="{{ '/prescreener' | relative_url }}">Request assistance</a>

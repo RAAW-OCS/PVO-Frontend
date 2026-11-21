@@ -1,7 +1,9 @@
 // Event recaps: photos and videos from past events (the events API, newest first).
 // Used by the /gallery/ page and the "From recent events" section on the homepage.
+// Tiles are OCS glowOnHover cards; clicking one opens the OCS modal.
 import { escapeHtml, formatLongDate, loadEvents, mediaInfo } from './api.js';
-import { initEventDialog, openEventDialog } from './calendar.js';
+import { eventDetailsHtml } from './calendar.js';
+import { initModal, openModal } from './modal.js';
 
 /** Past events that have a picture or video, newest first. */
 export function recapEvents(events, now = new Date()) {
@@ -14,17 +16,19 @@ function recapHtml(event) {
   const media = mediaInfo(event.image_url);
   const isVideo = media.type !== 'image';
   const picture = media.thumb
-    ? `<img class="pvo-recap__img" src="${escapeHtml(media.thumb)}" alt="" loading="lazy">`
-    : '<span class="pvo-recap__placeholder" aria-hidden="true"></span>';
+    ? `<img class="w-full h-full object-cover rounded-t-xl" src="${escapeHtml(media.thumb)}" alt="" loading="lazy">`
+    : '';
   return `
-    <li>
-      <button class="pvo-recap" type="button" data-recap-id="${event.id}">
-        <span class="pvo-recap__media">
+    <li class="m-0">
+      <button type="button" class="glowOnHover rounded-xl w-full h-full text-left flex flex-col" data-recap-id="${event.id}">
+        <span class="relative block w-full aspect-video rounded-t-xl bg-neutral-900">
           ${picture}
-          ${isVideo ? '<span class="pvo-recap__badge">Video</span>' : ''}
+          ${isVideo ? '<span class="absolute top-2 left-2 px-2 py-0.5 rounded text-xs font-bold bg-neutral-900 text-neutral-50">Video</span>' : ''}
         </span>
-        <span class="pvo-recap__title">${escapeHtml(event.title)}</span>
-        <span class="pvo-recap__date">${escapeHtml(formatLongDate(event.start))}</span>
+        <span class="block p-3">
+          <span class="block font-bold">${escapeHtml(event.title)}</span>
+          <span class="block text-sm text-neutral-400">${escapeHtml(formatLongDate(event.start))}</span>
+        </span>
       </button>
     </li>`;
 }
@@ -33,19 +37,18 @@ function recapHtml(event) {
 export function renderRecaps(list, events, { limit = Infinity } = {}) {
   const recaps = recapEvents(events).slice(0, limit);
   list.innerHTML = recaps.map(recapHtml).join('');
-  const dialog = document.querySelector('[data-event-dialog]');
+  initModal();
   list.onclick = (clickEvent) => {
     const tile = clickEvent.target.closest('[data-recap-id]');
     const match = tile && recaps.find((item) => String(item.id) === tile.dataset.recapId);
-    if (match && dialog) openEventDialog(dialog, match);
+    if (match) openModal(eventDetailsHtml(match));
   };
   return recaps.length;
 }
 
 async function initGalleryPage() {
-  const list = document.querySelector('.pvo-recaps--page[data-recaps]');
+  const list = document.querySelector('[data-recaps-page]');
   if (!list) return;
-  initEventDialog();
   const status = document.querySelector('[data-recaps-status]');
   const { ok, events } = await loadEvents();
   if (!ok) {

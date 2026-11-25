@@ -119,9 +119,19 @@ export function isGuest(session) {
   return session.state === 'signed-in' && session.user.role === 'Guest';
 }
 
+/** Log out, and check with the backend that it worked. Resolves to { ok, message }. */
 export async function signOut() {
-  await apiFetch('/api/authenticate', { method: 'DELETE' });
-  sessionPromise = null;
+  const failed = 'We could not log you out. Please try again.';
+  const result = await apiFetch('/api/authenticate', { method: 'DELETE' });
+  if (result.status === 0 || result.status >= 500) return { ok: false, message: messageFrom(result, failed) };
+  let session = await getSession({ refresh: true });
+  if (session.state === 'signed-in') {
+    // Logging in on the backend's own /login page starts a separate session, which a backend
+    // older than this code leaves running. End it the way that page's own log out does.
+    await apiFetch('/logout');
+    session = await getSession({ refresh: true });
+  }
+  return session.state === 'signed-out' ? { ok: true } : { ok: false, message: failed };
 }
 
 /** Only allow redirects back into this site. */

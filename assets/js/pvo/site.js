@@ -46,10 +46,17 @@ function initLogOut() {
   document.addEventListener('click', async (event) => {
     const button = event.target.closest('[data-pvo-signout]');
     if (!button) return;
+    const label = button.textContent;
     button.disabled = true;
     button.textContent = 'Logging out…';
-    await signOut();
-    window.location.assign(`${baseurl}/`);
+    const result = await signOut();
+    if (result.ok) {
+      window.location.assign(`${baseurl}/`);
+      return;
+    }
+    button.disabled = false;
+    button.textContent = label;
+    window.alert(result.message);
   });
 }
 
